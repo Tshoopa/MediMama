@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.git/
+.env
+models/
+*.gguf
+data/raw/
+docs/
+tests/
+demo_colab.py
+ngrok.txt
+*.md

@@ -1,0 +1,35 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: medimama-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_storage:/qdrant/storage
+    restart: unless-stopped
+
+  medimama:
+    build: .
+    container_name: medimama-api
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # Point the app to the Qdrant service instead of localhost
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+      # Path where the model is mounted inside the container
+      - MODEL_PATH=/models/meditron-7b.Q4_K_M.gguf
+    volumes:
+      # Mount the local model directory into the container (read-only)
+      - ./models:/models:ro
+      # Optional: mount cleaned data if loaded at runtime
+      - ./data:/app/data:ro
+    depends_on:
+      - qdrant
+    restart: unless-stopped
+
+volumes:
+  qdrant_storage:
