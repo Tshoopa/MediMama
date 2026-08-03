@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.env
+*.gguf
+models/
+qdrant_storage/
+ngrok.txt
+.ipynb_checkpoints/
