@@ -1,0 +1,1084 @@
+{
+  "version": "1.0",
+  "description": "Deterministic exact patterns only. Mother-language paraphrases belong in triage_semantic_concepts.json.",
+
+  "tokens": {
+    "fever": [
+      "fever",
+      "high temperature",
+      "feels hot",
+      "temperature"
+    ]
+  },
+
+  "count_terms": {
+    "vomiting": [
+      "vomit",
+      "vomited",
+      "vomiting",
+      "throw up",
+      "throws up",
+      "throwing up",
+      "thrown up",
+      "puke",
+      "puked",
+      "puking",
+      "keeps vomiting",
+      "vomiting everything"
+    ],
+    "diarrhea": [
+      "diarrhea",
+      "watery diarrhea",
+      "loose stool",
+      "loose stools",
+      "watery stool"
+    ]
+  },
+
+  "negation_overrides": {
+    "has_fever": [
+      "\\bno fever\\b",
+      "\\bwithout fever\\b",
+      "\\bnot feverish\\b",
+      "\\bno high temperature\\b",
+      "\\bno temperature\\b"
+    ],
+    "vomiting": [
+      "\\bno vomiting\\b",
+      "\\bwithout vomiting\\b",
+      "\\bno vomit\\b"
+    ],
+    "stiff_neck": [
+      "\\bno stiff neck\\b",
+      "\\bwithout stiff neck\\b"
+    ],
+    "breathing_difficulty": [
+      "\\bno trouble breathing\\b",
+      "\\bno breathing problem\\b",
+      "\\bno breathing problems\\b",
+      "\\bbreathing normally\\b",
+      "\\bbreathing fine\\b"
+    ],
+    "stridor_or_noisy_breathing": [
+      "\\bno noisy breathing\\b",
+      "\\bwithout noisy breathing\\b",
+      "\\bno stridor\\b"
+    ],
+    "face_lip_tongue_swelling": [
+      "\\bno swelling\\b",
+      "\\bwithout swelling\\b"
+    ]
+  },
+
+  "boolean_patterns": {
+    "cough": [
+      "cough",
+      "coughing"
+    ],
+
+    "gastro_recent": [
+      "\\bgastro\\b",
+      "stomach bug",
+      "tummy bug",
+      "after vomiting",
+      "after diarrhea",
+      "stomach virus"
+    ],
+
+    "diarrhea": [
+      "diarrhea",
+      "loose stool",
+      "loose stools",
+      "watery stool",
+      "watery diarrhea"
+    ],
+
+    "vomiting": [
+      "vomiting",
+      "vomited",
+      "vomit",
+      "keeps vomiting",
+      "vomiting everything",
+      "throwing up",
+      "throws up",
+      "thrown up",
+      "puking",
+      "puked",
+      "can't keep.{0,30}(water|fluids|milk|formula).{0,20}down",
+      "cannot keep.{0,30}(water|fluids|milk|formula).{0,20}down",
+      "vomiting pale green",
+      "vomiting green",
+      "green vomit",
+      "pale green fluid"
+    ],
+
+    "not_breathing": [
+      "not breathing",
+      "stopped breathing",
+      "cannot breathe",
+      "can't breathe",
+      "no breathing",
+      "gasping",
+      "gasped"
+    ],
+
+    "blue_lips": [
+      "blue lips",
+      "lips.{0,30}blue",
+      "face.{0,30}blue",
+      "turning blue",
+      "turned blue",
+      "looked blue",
+      "blue around.{0,40}(mouth|nose|lips)",
+      "blue tint around.{0,40}(mouth|nose|lips)",
+      "mouth.{0,40}blue",
+      "nose.{0,40}blue",
+      "slightly blue",
+      "skin looks mottled",
+      "mottled and purple",
+      "mottled purple",
+      "purple mottled",
+      "hands and feet.{0,80}(ice cold|cold)",
+      "(ice cold|cold).{0,80}hands and feet"
+    ],
+
+    "choking_silent": [
+      "choking.{0,80}(silent|no sound|cannot breathe|cannot make)",
+      "cannot make any sound",
+      "choking.{0,100}(silent|completely silent|cannot make any sound|can't make any sound|no sound)",
+      "gasped.{0,80}(turned blue|blue).{0,80}(silent|struggling to breathe)",
+      "plastic wrapper.{0,100}(gasped|choking|silent|turned blue)",
+      "completely silent and struggling to breathe",
+      "silent and struggling to breathe"
+    ],
+
+    "unresponsive": [
+      "unresponsive",
+      "unconscious",
+      "not responding",
+      "no pulse",
+      "not making sense"
+    ],
+
+    "lethargic": [
+      "\\blethargic\\b",
+      "\\bfloppy\\b",
+      "very sleepy",
+      "not acting normally",
+      "too weak to stand",
+      "too weak to stand up",
+      "too weak to sit",
+      "too weak",
+      "completely floppy",
+      "just wants to sleep",
+      "too tired to latch",
+      "too tired to feed",
+      "very weak",
+      "very confused",
+      "confused",
+      "feels dizzy",
+      "dizzy",
+      "difficult to wake"
+    ],
+
+    "hard_to_wake": [
+      "hard to wake",
+      "cannot wake",
+      "can't wake",
+      "will not wake",
+      "won't wake",
+      "difficult to wake",
+      "too sleepy to wake",
+      "too sleepy to wake up",
+      "cannot wake.{0,20}(him|her|the baby|my baby)",
+      "can't wake.{0,20}(him|her|the baby|my baby)",
+      "very confused",
+      "not making sense",
+      "too weak to stand",
+      "too weak to stand up",
+      "too weak to sit"
+    ],
+
+    "seizure": [
+      "\\bseizure\\b",
+      "\\bconvulsion\\b",
+      "\\bconvulsing\\b",
+      "\\bfit\\b",
+      "shaking fit",
+      "whole body.{0,30}shak",
+      "body.{0,20}(jerking|shaking)",
+      "eyes rolled back",
+      "stiffen.{0,20}and.{0,20}(shook|shaking|jerking)",
+      "started shaking uncontrollably",
+      "body went stiff.{0,40}shook"
+    ],
+
+    "prolonged_seizure": [
+      "(seizure|convulsion|fit).{0,80}(not stopping|not stop|still going|keeps going|more than five minutes|5 minutes|five minutes)",
+      "seizure.{0,25}(more than|over|longer than).{0,10}(5|five).{0,10}min",
+      "second seizure"
+    ],
+
+    "suicidal_ideation": [
+      "doesn'?t want to (be alive|live|be here)",
+      "wants? to (die|kill (herself|himself|themselves))",
+      "\\bsuicidal\\b",
+      "said (she|he|they).{0,20}(wants? to|is going to).{0,20}(die|kill)",
+      "talk\\w* about (suicide|ending (her|his|their) life|not wanting to live)",
+      "doesn't want to be alive",
+      "does not want to live"
+    ],
+
+    "self_harm": [
+      "cuts? on (her|his|their) (arm|arms|leg|legs|wrist|wrists|body|thigh|thighs)",
+      "self[- ]?harm\\w*",
+      "cutting (herself|himself|themselves)",
+      "\\brazor\\b.{0,20}(cut|arm|skin|wrist)",
+      "\\bblade\\b.{0,20}(cut|arm|skin|wrist)",
+      "found cuts on"
+    ],
+
+    "loss_of_consciousness": [
+      "knocked out",
+      "lost consciousness",
+      "pass(ed)? out",
+      "was unconscious",
+      "blacked out",
+      "unresponsive for (a )?(few )?(second|minute)",
+      "knocked.{0,20}(unconscious|out cold)"
+    ],
+
+    "known_diabetic": [
+      "\\bdiabetic\\b",
+      "type.{0,5}1 diabetes",
+      "\\bdiabetes\\b",
+      "has diabetes",
+      "is diabetic"
+    ],
+
+    "fruity_breath": [
+      "breath smells? (fruity|like fruit|like acetone|sweet)",
+      "fruity[- ]?smelling breath",
+      "breath.{0,20}fruity",
+      "fruity.{0,20}breath"
+    ],
+
+    "umbilical_redness_or_discharge": [
+      "belly.?button.{0,25}(red|discharge|pus|oozing|swollen|smell)",
+      "umbilical (area|cord|stump).{0,25}(red|discharge|pus|infected|swollen)",
+      "around.{0,20}(belly button|navel).{0,20}(red|discharge|pus)",
+      "navel.{0,25}(red|discharge|pus|infected)"
+    ],
+
+    "swallowed_battery_or_magnet": [
+      "(swallowed|swallow|ate|eaten|ingested|ingest).{0,80}(button battery|watch battery|battery|magnet)",
+      "(button battery|watch battery|battery|magnet).{0,80}(swallowed|swallow|ate|eaten|ingested|ingest)"
+    ],
+
+    "swallowed_medicine_or_chemical": [
+      "\\b(swallowed|swallow|ate|eaten|drank|ingested|ingest|took)\\b.{0,60}\\b(pill|pills|tablet|tablets|medication|medicine|medicines|bleach|chemical|chemicals|cleaner|cleaning liquid|detergent|poison)\\b",
+      "(bit into|chewed|swallowed|ate|drank).{0,100}(laundry detergent|detergent packet|detergent pod|washing pod|laundry pod)",
+      "(laundry detergent|detergent packet|detergent pod|washing pod|laundry pod).{0,100}(bit into|chewed|swallowed|ate|drank)",
+      "spitting up.{0,50}(soap|detergent|blue soap)",
+      "(iron supplements|iron tablets|iron pills).{0,100}(missing|open|ate|swallowed|chewed)",
+      "(ate|swallowed|chewed).{0,100}(iron supplements|iron tablets|iron pills)",
+      "tablets missing",
+      "pills missing",
+      "dark red powder on.{0,30}lips",
+      "open bottle.{0,60}(pill|pills|tablet|tablets|medication|medicine|sleeping)",
+      "sleeping pills.{0,60}missing",
+      "(some|few).{0,20}(pill|pills|tablet|tablets).{0,20}missing",
+      "found.{0,40}(open|empty).{0,20}bottle.{0,40}(pill|pills|tablet|tablets|medication|medicine)"
+    ],
+
+    "has_rash": [
+      "\\brash\\b",
+      "\\bspots?\\b",
+      "purple spots",
+      "tiny purple dots",
+      "flat red rash",
+      "red watery eyes",
+      "watery eyes"
+    ],
+
+    "non_blanching_rash": [
+      "non[- ]?blanching",
+      "does not fade",
+      "do not fade",
+      "not fade when pressed",
+      "does not disappear",
+      "do not disappear",
+      "does not blanch",
+      "do not blanch",
+      "glass test",
+      "petechiae",
+      "purple spots",
+      "tiny purple dots"
+    ],
+
+    "stiff_neck": [
+      "stiff neck",
+      "neck (feels?|is|seems|looks).{0,10}stiff",
+      "neck.{0,10}stiff",
+      "can'?t (bend|move|turn).{0,10}(her|his|their)?.{0,10}neck",
+      "neck (pain|hurts).{0,15}(move|bend|turn)",
+      "soft spot.{0,80}(bulging|bulges|bulged|sticking out|hard)",
+      "fontanelle.{0,80}(bulging|bulges|bulged|sticking out|hard)",
+      "bulging.{0,40}(soft spot|fontanelle)",
+      "(soft spot|fontanelle).{0,40}feels hard"
+    ],
+
+    "light_sensitivity": [
+      "sensitive to light",
+      "light hurts",
+      "cannot tolerate light",
+      "photophobia",
+      "light is bothering",
+      "room is too bright",
+      "hiding.{0,60}face.{0,80}(light|bright)",
+      "hides.{0,60}face.{0,80}(light|bright)",
+      "keeps crying and hiding.{0,60}face",
+      "says the light hurts",
+      "light hurts (her|his|their) eyes"
+    ],
+
+    "breathing_difficulty": [
+      "trouble breathing",
+      "difficulty breathing",
+      "struggling to breathe",
+      "working hard to breathe",
+      "cannot breathe properly",
+      "can't breathe properly"
+    ],
+
+    "fast_breathing": [
+      "breathing.{0,30}fast",
+      "fast.{0,30}breathing",
+      "breathing really fast",
+      "breathing very fast"
+    ],
+
+    "wheeze": [
+      "wheez"
+    ],
+
+    "grunting": [
+      "grunting"
+    ],
+
+    "severe_or_early_jaundice": [
+      "bright yellow",
+      "very yellow",
+      "deep yellow",
+      "yellow all over",
+      "yellow from.{0,40}(face|head).{0,40}(toes|feet|legs|body)",
+      "face.{0,40}(down to|to).{0,20}(toes|feet)",
+      "whole body.{0,40}yellow",
+      "yellow.{0,40}(chest|tummy|belly|legs|toes|feet|body)",
+      "yellow.{0,120}(day 1|day 2|day one|day two|first day|second day|24 hours|first 24 hours|1 day old|2 days old|first day of life)"
+    ],
+
+    "chest_retractions": [
+      "ribs?.{0,40}(pull|suck|retract)",
+      "chest.{0,40}(pull|suck|retract)",
+      "skin pulling in",
+      "pulling in under.{0,30}ribs",
+      "chest is pulling in",
+      "chest.{0,40}pulling in",
+      "chest.{0,40}sucking in",
+      "stomach is sucking in",
+      "skin pulling in under.{0,30}ribs",
+      "pulling in very hard",
+      "pulling in deeply"
+    ],
+
+    "stridor_or_noisy_breathing": [
+      "stridor",
+      "noisy breathing",
+      "barking cough.{0,80}(noisy|breathing)"
+    ],
+
+    "prolonged_coughing_fit": [
+      "coughing.{0,80}(long bouts|catch.*breath|turning blue|turning red)"
+    ],
+
+    "allergen_exposure": [
+      "\\bpeanut\\b",
+      "peanut butter",
+      "\\begg\\b",
+      "\\bmilk\\b",
+      "\\bnuts?\\b",
+      "bee sting",
+      "stung by a bee",
+      "after eating",
+      "after food",
+      "strawberries",
+      "hazelnut",
+      "hazelnut traces",
+      "nut traces",
+      "tree nut",
+      "cashew",
+      "almond",
+      "walnut"
+    ],
+
+    "hives": [
+      "hives"
+    ],
+
+    "widespread_hives": [
+      "hives all over",
+      "widespread hives",
+      "rash all over"
+    ],
+
+    "face_lip_tongue_swelling": [
+      "(face|lip|lips|tongue).{0,50}(swollen|swelling|swell)",
+      "(swollen|swelling|swell).{0,50}(face|lip|lips|tongue)"
+    ],
+
+    "throat_swelling": [
+      "throat.{0,40}(swollen|swelling|closing)",
+      "(swollen|swelling).{0,40}throat",
+      "tongue feels itchy",
+      "tongue feels fuzzy",
+      "itchy tongue",
+      "fuzzy tongue",
+      "voice sounds raspy",
+      "raspy voice",
+      "voice sounds deep",
+      "voice changed",
+      "voice has changed",
+      "hoarse voice after.{0,60}(nut|hazelnut|peanut|egg|milk|bee|wasp)",
+      "raspy.{0,40}voice.{0,80}(nut|hazelnut|peanut|egg|milk|bee|wasp)"
+    ],
+
+    "vomiting_after_allergen": [
+      "(vomit|vomited|vomiting|throwing up|throws up|puking|puked).{0,120}(peanut|nut|hazelnut|egg|milk|strawberr|bee|wasp)",
+      "(peanut|nut|hazelnut|egg|milk|strawberr|bee|wasp).{0,120}(vomit|vomited|vomiting|throwing up|throws up|puking|puked)"
+    ],
+
+    "reduced_urine": [
+      "reduced urine",
+      "not much urine",
+      "not peeing",
+      "not weeing",
+      "fewer wet",
+      "less wet",
+      "hasn't peed",
+      "has not peed",
+      "hasn't passed urine",
+      "has not passed urine",
+      "hasn't urinated",
+      "has not urinated",
+      "no pee since",
+      "no urine since",
+      "not peed since",
+      "not passed urine since",
+      "dry nappy",
+      "dry nappies",
+      "dry diaper",
+      "dry diapers",
+      "dry all day",
+      "not (had|got|worn).{0,20}(a )?wet (nappy|nappies|diaper|diapers)",
+      "no (nappy|diaper|wet nappy|wet diaper).{0,40}(hours|all day|since)",
+      "only.{0,10}(one|1|two|2).{0,20}wet (nappy|nappies|diaper|diapers)",
+      "only had.{0,10}(one|1|two|2).{0,20}wet (nappy|nappies|diaper|diapers)",
+      "just.{0,10}(one|1).{0,20}wet (nappy|nappies|diaper|diapers)"
+    ],
+
+    "no_wet_diapers": [
+      "no wet.{0,30}(diaper|diapers|nappy|nappies)",
+      "no urine",
+      "no pee",
+      "no wee"
+    ],
+
+    "sunken_eyes": [
+      "sunken.{0,30}eyes?",
+      "eyes?.{0,30}sunken",
+      "eyes look sunken",
+      "eyes are sunken",
+      "child's eyes look sunken",
+      "baby's eyes look sunken",
+      "toddler's eyes look sunken"
+    ],
+
+    "sunken_fontanelle": [
+      "soft spot.{0,80}(pulling down|pulled down|sunken|dipped|caved in)",
+      "soft spot looks like.{0,80}(pulling down|sunken|caved in)",
+      "fontanelle.{0,80}(sunken|pulling down|caved in)",
+      "sunken soft spot",
+      "soft spot.{0,40}looks like it is pulling down"
+    ],
+
+    "no_tears": [
+      "no tears",
+      "without tears",
+      "cries without tears",
+      "crying without tears",
+      "no tears when crying"
+    ],
+
+    "dry_mouth": [
+      "dry mouth",
+      "dry lips"
+    ],
+
+    "not_drinking": [
+      "not drinking",
+      "not taking.{0,30}(fluid|fluids|water|milk)",
+      "refusing drinks",
+      "refusing fluids",
+      "refuses fluids",
+      "can't keep water down",
+      "cannot keep water down",
+      "can't keep fluids down",
+      "cannot keep fluids down",
+      "can't keep milk down",
+      "cannot keep milk down",
+      "vomiting everything"
+    ],
+
+    "refusing_fluids": [
+      "refusing fluids",
+      "refusing drinks",
+      "refusing to drink",
+      "refusing all fluids"
+    ],
+
+    "very_irritable": [
+      "won't let me touch him",
+      "will not let me touch him",
+      "won't let me touch her",
+      "will not let me touch her",
+      "extremely irritable",
+      "very irritable",
+      "screaming and cannot settle",
+      "screaming and won't settle",
+      "inconsolable",
+      "crying non-?stop",
+      "crying nonstop",
+      "won't stop crying",
+      "will not stop crying",
+      "nothing calms",
+      "cannot be settled",
+      "can't be settled"
+    ],
+
+    "water_submersion": [
+      "under the water",
+      "submerged",
+      "near.?drown",
+      "drowning",
+      "face down.{0,40}(water|pool|bath)",
+      "fell into.{0,40}(pond|pool|water)",
+      "slipped under the bathwater",
+      "under the bathwater",
+      "under bathwater",
+      "bathwater.{0,80}(slipped under|went under)",
+      "went under.{0,40}bathwater"
+    ],
+
+    "post_submersion_coughing": [
+      "\\bcough",
+      "inhaled water",
+      "kept coughing",
+      "choked after",
+      "choked and vomited",
+      "breathing sounds very wet",
+      "wet and rattling",
+      "rattling breathing",
+      "breathing sounds.{0,40}rattling",
+      "breathing sounds.{0,40}wet",
+      "wet.{0,40}breathing"
+    ],
+
+    "fall_from_height": [
+      "fell.{0,50}(off|from|out of).{0,80}(bed|table|changing table|pram|stroller|cot|couch|sofa|chair|high chair|highchair)",
+      "dropped.{0,50}(off|from).{0,80}(bed|table|sofa|couch)",
+      "rolled.{0,50}(off|from).{0,80}(bed|table)",
+      "fell down.{0,30}stair",
+      "fell.{0,80}(playground|climbing frame|slide|swing|monkey bars)"
+    ],
+
+    "head_injury": [
+      "head.{0,50}(hit|bump|bumped|injury)",
+      "(hit|bumped).{0,50}head",
+      "hit.{0,40}head.{0,80}concrete",
+      "head.{0,40}concrete",
+      "fell off.{0,50}(scooter|bike|bicycle)",
+      "huge goose egg",
+      "goose egg.{0,50}(forehead|head)",
+      "forehead.{0,50}goose egg"
+    ],
+
+    "vomiting_after_head_injury": [
+      "(hit|bumped).{0,50}head.{0,120}(vomit|vomited|vomiting|throwing up|thrown up|throws up|puked|puking)",
+      "(vomit|vomited|vomiting|throwing up|thrown up|throws up|puked|puking).{0,120}(hit|bumped).{0,50}head",
+      "fell off.{0,50}(scooter|bike).{0,160}(vomit|vomited|vomiting|throwing up|thrown up|puked|puking)"
+    ],
+
+    "burn": [
+      "\\bburn\\b",
+      "\\bburned\\b",
+      "\\bburnt\\b",
+      "scald",
+      "boiling water",
+      "hot water",
+      "hot tea",
+      "hot coffee",
+      "hot oven",
+      "stove",
+      "iron",
+      "heater",
+      "hot soup",
+      "bowl of hot soup",
+      "pulled.{0,80}hot soup",
+      "sunburn",
+      "bad sunburn",
+      "hot coal",
+      "stepped on.{0,40}hot coal",
+      "white and charred",
+      "charred",
+      "skin is peeling",
+      "peeling"
+    ],
+
+    "burn_blister": [
+      "blister",
+      "blistering",
+      "large blisters",
+      "extensive blistering",
+      "skin is blistering",
+      "forming large blisters",
+      "peeling",
+      "skin is peeling"
+    ],
+
+    "burn_infected": [
+      "pus",
+      "infected",
+      "yellow pus",
+      "pus oozing",
+      "oozing pus"
+    ],
+
+    "burn_sensitive_area": [
+      "\\bface\\b",
+      "\\bhand\\b",
+      "\\bgenitals\\b",
+      "\\bchest\\b",
+      "\\bneck\\b",
+      "\\bfoot\\b",
+      "\\bfeet\\b",
+      "\\bsole\\b",
+      "sole of his foot",
+      "sole of her foot"
+    ],
+
+    "swallowed_non_sharp_object": [
+      "(swallowed|swallow|ate|eaten).{0,80}(lego|coin|bead|small toy|plastic piece|smooth object)",
+      "(lego|coin|bead|small toy|plastic piece|smooth object).{0,80}(swallowed|swallow|ate|eaten)"
+    ],
+
+    "plant_ingestion": [
+      "(ate|chewed|swallowed).{0,80}(plant|leaf|berry|berries)",
+      "(plant|leaf|berry|berries).{0,80}(ate|chewed|swallowed)"
+    ],
+
+    "sore_throat": [
+      "sore throat"
+    ],
+
+    "drooling": [
+      "\\bdrooling\\b",
+      "\\bdribbling\\b"
+    ],
+
+    "cannot_swallow_saliva": [
+      "cannot swallow",
+      "unable to swallow",
+      "cannot swallow.{0,50}saliva",
+      "unable to swallow.{0,50}saliva"
+    ],
+
+    "testicular_pain": [
+      "(testicle|testicular|scrotum|scrotal).{0,60}pain",
+      "pain.{0,60}(testicle|testicular|scrotum|scrotal)",
+      "testicle hurts",
+      "testicles hurt",
+      "left testicle hurts",
+      "right testicle hurts",
+      "scrotum hurts",
+      "says his.{0,30}testicle hurts"
+    ],
+
+    "severe_abdominal_pain": [
+      "severe.{0,50}(tummy|belly|abdominal|stomach).{0,30}pain",
+      "severe pain around.{0,50}belly button",
+      "pain around.{0,50}belly button.{0,80}lower right",
+      "moved to the lower right",
+      "lower right side",
+      "right lower.{0,30}(tummy|belly|abdomen|abdominal)",
+      "crying when (he|she) walks",
+      "won't let me touch.{0,30}(tummy|belly|abdomen)",
+      "will not let me touch.{0,30}(tummy|belly|abdomen)",
+      "screaming in pain every",
+      "screaming in pain.{0,80}pulling.{0,30}knees",
+      "hard, purple lump in (his|her) groin",
+      "purple lump in (his|her) groin"
+    ],
+
+    "appendicitis_signs": [
+      "pain around.{0,50}(belly button|navel).{0,120}(lower right|right side)",
+      "severe pain around.{0,50}(belly button|navel)",
+      "moved to the lower right",
+      "lower right.{0,40}(tummy|belly|abdomen|abdominal)",
+      "(lower right|right lower|right side).{0,15}(belly|abdomen|stomach).{0,10}pain",
+      "pain.{0,15}(lower right|right lower).{0,15}(belly|abdomen)",
+      "pain.{0,20}(moved|shifted|migrat\\w*).{0,20}(right|lower right)",
+      "crying when (he|she) walks",
+      "won't let me touch.{0,40}(tummy|belly|abdomen)",
+      "will not let me touch.{0,40}(tummy|belly|abdomen)"
+    ],
+
+    "strangulated_hernia_signs": [
+      "hard.{0,20}purple lump.{0,80}groin",
+      "hard, purple lump.{0,80}groin",
+      "purple lump.{0,80}groin",
+      "lump in.{0,40}groin.{0,120}(vomiting|screaming|severe pain|pain)",
+      "groin.{0,80}(hard|purple).{0,120}(vomiting|screaming|pain)",
+      "hard lump in.{0,40}groin.{0,120}(vomiting|screaming|pain)"
+    ],
+
+    "knees_up": [
+      "knees up",
+      "pulling.{0,40}knees",
+      "drawing.{0,40}knees",
+      "pulling his knees up to his chest",
+      "pulling her knees up to her chest",
+      "knees up to his chest",
+      "knees up to her chest",
+      "pulling.{0,30}knees.{0,30}chest"
+    ],
+
+    "urinary_pain": [
+      "pain.{0,40}(peeing|weeing|passing urine)",
+      "burning.{0,40}(urine|pee|wee)",
+      "hurts.{0,40}(peeing|weeing|passing urine)",
+      "cries.{0,40}(peeing|weeing|passing urine)",
+      "crying.{0,40}(peeing|weeing|passing urine)",
+      "flank pain",
+      "lower back pain",
+      "severe pain in (her|his) lower back",
+      "pain in (her|his) lower back"
+    ],
+
+    "flank_pain": [
+      "flank pain",
+      "pain in.{0,40}(flank|side|lower back)",
+      "severe pain in.{0,40}(flank|side|lower back)",
+      "lower back pain",
+      "lower back/flank",
+      "back/flank pain"
+    ],
+
+    "gross_hematuria": [
+      "urine is pink",
+      "pink urine",
+      "red urine",
+      "bloody urine",
+      "blood in urine",
+      "blood in (his|her) urine",
+      "urine.{0,40}(pink|red|bloody)",
+      "(pink|red|bloody).{0,40}urine",
+      "red clots",
+      "small red clots",
+      "clots in urine"
+    ],
+
+    "jaundice_or_yellow": [
+      "jaundice",
+      "jaundiced",
+      "yellow eyes",
+      "yellow skin",
+      "looks yellow",
+      "looked yellow",
+      "very yellow",
+      "bright yellow",
+      "yellow in the eyes",
+      "eyes are yellow",
+      "yellow face",
+      "yellow chest"
+    ],
+
+    "poor_feeding": [
+      "poor feeding",
+      "feeding poorly",
+      "not feeding",
+      "not feeding well",
+      "won't feed",
+      "will not feed",
+      "refusing feeds",
+      "refusing to feed",
+      "too sleepy to feed",
+      "too tired to feed",
+      "too sleepy to.{0,40}(feed|breastfeed|nurse|latch|wake up for)",
+      "too tired to.{0,40}(feed|breastfeed|nurse|latch)",
+      "not waking for feeds",
+      "not waking.{0,40}(feed|feeds|breastfeed)",
+      "hard to wake for feeds",
+      "only had one.{0,20}(feed|breastfeed)",
+      "hasn't fed",
+      "has not fed"
+    ],
+
+    "headache": [
+      "headache",
+      "bad headache",
+      "severe headache",
+      "terrible headache"
+    ],
+
+    "worst_headache": [
+      "worst headache",
+      "worst.{0,40}head pain",
+      "worst pain.{0,40}head",
+      "severe headache.{0,120}(vomiting|confused|confusion|too weak)",
+      "high fever.{0,120}severe headache",
+      "severe headache.{0,120}high fever"
+    ],
+
+    "sudden_severe_headache": [
+      "thunderclap",
+      "sudden.{0,40}(severe|terrible|bad).{0,40}headache",
+      "headache.{0,40}sudden",
+      "suddenly screamed.{0,80}headache"
+    ],
+
+    "cns_infection_red_flags": [
+      "high fever.{0,120}severe headache.{0,120}(vomiting|confused|confusion|too weak)",
+      "severe headache.{0,120}vomiting.{0,120}(confused|confusion|too weak)",
+      "fever.{0,120}headache.{0,120}(confused|confusion|too weak)",
+      "too weak to stand.{0,120}(fever|headache)",
+      "very confused.{0,120}(fever|headache)"
+    ],
+
+    "deep_wound": [
+      "deep cut",
+      "deep wound",
+      "gash",
+      "needs stitches",
+      "white tissue",
+      "can see.{0,40}(tissue|fat)",
+      "puncture wound",
+      "puncture wounds",
+      "puncture.{0,80}bleeding"
+    ],
+
+    "animal_bite": [
+      "cat bite",
+      "dog bite",
+      "animal bite",
+      "stray cat",
+      "bitten by (a )?(dog|cat|animal|stray)",
+      "spider bite",
+      "bitten by a spider",
+      "bite.{0,80}puncture",
+      "bite area is turning purple",
+      "bite area is turning black",
+      "bite.{0,80}(turning purple|turning black)",
+      "turning purple/black",
+      "purple/black"
+    ],
+
+    "eye_injury": [
+      "(poked|scratch|scratched|stick).{0,60}eye",
+      "eye.{0,60}(injury|poked|scratch|scratched)"
+    ],
+
+"foreign_body_nose": [
+      "(bead|toy|object).{0,60}(nose|nostril)",
+      "(nose|nostril).{0,60}(bead|toy|object)"
+    ],
+
+    "persistent_nosebleed": [
+      "nosebleed.{0,80}(will not stop|not stop|still bleeding|keeps bleeding|20 minutes|twenty minutes)",
+      "nosebleed.{0,100}(25 minutes|twenty five minutes|twenty-five minutes)",
+      "gushing blood.{0,100}(25 minutes|twenty five minutes|twenty-five minutes)",
+      "despite.{0,80}pinching.{0,80}nose",
+      "pinching.{0,80}nose.{0,80}(still bleeding|gushing|won't stop|will not stop)"
+    ],
+
+    "refusing_weight_bear": [
+      "refusing to (walk|stand|bear weight|put weight)",
+      "will not (walk|stand|bear weight|put weight)",
+      "cannot (walk|stand|bear weight|put weight)",
+      "refuses to (stand|walk)",
+      "won't (stand|walk)",
+      "(won'?t|will not|refuses? to|can'?t|cannot) put.{0,10}weight on",
+      "(won'?t|will not|refuses? to|can'?t|cannot) bear weight",
+      "won't put any weight on"
+    ],
+
+    "sudden_limp": [
+      "sudden limp",
+      "limp.{0,80}(sudden|refusing|cannot walk)",
+      "walking with a limp",
+      "walking funny",
+      "limping.{0,80}no trauma",
+      "limp.{0,80}no trauma",
+      "woke up.{0,80}limping"
+    ],
+
+    "hot_swollen_joint": [
+      "joint.{0,60}(hot|red|swollen)",
+      "(hot|red|swollen).{0,60}joint",
+      "(knee|ankle|hip|elbow|wrist).{0,80}(hot|red|swollen)",
+      "(warm|hot) to (the )?touch",
+      "leg is warm.{0,20}(and|to)",
+      "arm is warm.{0,20}(and|to)"
+    ],
+
+    "spreading_rash": [
+      "rash.{0,80}spreading",
+      "spreading.{0,80}rash",
+      "spreading to (his|her) face and neck",
+      "spreading to face and neck"
+    ],
+
+    "rash_starting_on_face": [
+      "rash started behind (his|her) ears",
+      "rash behind ears",
+      "spreading to (his|her) face and neck",
+      "spreading to face and neck",
+      "started behind.{0,30}ears.{0,80}spreading"
+    ],
+
+    "measles_like_rash": [
+      "red watery eyes.{0,120}rash",
+      "rash started behind.{0,30}ears",
+      "rash behind.{0,30}ears",
+      "flat red rash.{0,120}spreading",
+      "rash.{0,120}spreading to.{0,40}(face|neck)",
+      "high fever.{0,120}red watery eyes",
+      "red watery eyes.{0,120}runny nose",
+      "runny nose.{0,120}rash started behind.{0,30}ears"
+    ],
+
+    "routine_or_nonmedical": [
+      "stock.{0,40}invest",
+      "bitcoin",
+      "sleep problem",
+      "sleeping advice",
+      "development",
+      "not talking yet",
+      "hyperactive",
+      "breastfeeding",
+      "formula-fed",
+      "formula fed",
+      "reflux.{0,80}gaining weight",
+      "spits up.{0,80}gaining weight",
+      "what foods should i avoid"
+    ]
+  },
+
+  "value_patterns": [
+    {
+      "field": "burn_source",
+      "value": "hot_liquid",
+      "patterns": [
+        "boiling water",
+        "hot water",
+        "hot tea",
+        "hot coffee",
+        "hot soup",
+        "scald"
+      ]
+    },
+    {
+      "field": "burn_source",
+      "value": "hot_surface",
+      "patterns": [
+        "hot oven",
+        "oven door",
+        "stove",
+        "iron",
+        "heater",
+        "hot coal"
+      ]
+    }
+  ],
+
+  "derived_patterns": {
+    "head_injury_context": [
+      "\\bfell\\b",
+      "\\bfall\\b",
+      "\\bfallen\\b",
+      "\\bhit\\b",
+      "\\bbumped\\b",
+      "\\bbump\\b"
+    ],
+    "drowsy_after_head_injury": [
+      "drowsy",
+      "very sleepy",
+      "confused",
+      "not acting normally"
+    ],
+    "post_submersion_coughing": [
+      "\\bcough",
+      "inhaled water",
+      "kept coughing",
+      "choked after",
+      "choked and vomited",
+      "breathing sounds very wet",
+      "wet and rattling",
+      "rattling breathing"
+    ]
+  },
+
+  "medical_floor_tokens": [
+    "fever",
+    "temperature",
+    "cough",
+    "rash",
+    "vomit",
+    "vomited",
+    "vomiting",
+    "throwing up",
+    "diarrhea",
+    "headache",
+    "sore throat",
+    "burn",
+    "pain",
+    "blood",
+    "swollen",
+    "swelling",
+    "yellow",
+    "jaundice",
+    "goose egg",
+    "fontanelle",
+    "soft spot",
+    "mottled",
+    "laundry pod",
+    "detergent pod",
+    "iron supplements",
+    "hazelnut",
+    "raspy voice",
+    "hot soup",
+    "hot coal",
+    "charred",
+    "flank pain",
+    "blood in urine",
+    "pink urine",
+    "spider bite",
+    "bite",
+    "testicle hurts",
+    "suicidal",
+    "self-harm",
+    "razor",
+    "diabetic",
+    "belly button"
+  ]
+}

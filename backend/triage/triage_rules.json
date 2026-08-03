@@ -1,0 +1,740 @@
+{
+  "version": "2.1",
+  "policy": {
+    "principle": "fail_safe",
+    "prefer_over_triage": true,
+    "allow_rag_downgrade": false,
+    "description": "Severity-aware pediatric triage rules. FeatureValue fields (burn, hives, fall_from_height, head_injury, deep_wound, foreign_body_nose, animal_bite) use severity operators. All others use bool."
+  },
+  "rules": [
+    {
+      "id": "critical_airway_circulation",
+      "category": "airway",
+      "level": 1,
+      "priority": 100,
+      "conditions": { "any": ["not_breathing", "blue_lips", "unresponsive"] },
+      "reason": "critical airway/circulation sign"
+    },
+    {
+      "id": "silent_choking",
+      "category": "airway",
+      "level": 1,
+      "priority": 99,
+      "conditions": { "any": ["choking_silent"] },
+      "reason": "silent choking / possible complete airway obstruction"
+    },
+    {
+      "id": "button_battery_or_magnet_ingestion",
+      "category": "ingestion",
+      "level": 1,
+      "priority": 98,
+      "conditions": { "any": ["swallowed_battery_or_magnet"] },
+      "reason": "button battery or magnet ingestion"
+    },
+    {
+      "id": "medicine_or_chemical_ingestion",
+      "category": "poisoning",
+      "level": 1,
+      "priority": 98,
+      "conditions": { "any": ["swallowed_medicine_or_chemical"] },
+      "reason": "medication or chemical ingestion"
+    },
+    {
+      "id": "prolonged_or_ongoing_seizure",
+      "category": "seizure",
+      "level": 1,
+      "priority": 97,
+      "conditions": { "any": ["prolonged_seizure"] },
+      "reason": "prolonged or ongoing seizure"
+    },
+    {
+      "id": "acute_testicular_pain",
+      "category": "surgical",
+      "level": 1,
+      "priority": 96,
+      "conditions": { "any": ["testicular_pain"] },
+      "reason": "acute testicular/scrotal pain red flag"
+    },
+    {
+      "id": "non_blanching_rash",
+      "category": "rash_meningitis",
+      "level": 1,
+      "priority": 96,
+      "conditions": { "any": ["non_blanching_rash"] },
+      "reason": "non-blanching rash / meningococcal red flag"
+    },
+    {
+      "id": "meningitis_like_symptoms",
+      "category": "meningitis",
+      "level": 1,
+      "priority": 95,
+      "conditions": {
+        "all": ["stiff_neck"],
+        "any": ["has_fever", "light_sensitivity"]
+      },
+      "reason": "meningitis-like symptoms"
+    },
+    {
+      "id": "throat_swelling_with_breathing_problem",
+      "category": "airway",
+      "level": 1,
+      "priority": 95,
+      "conditions": {
+        "all": ["throat_swelling"],
+        "any": ["not_breathing", "breathing_difficulty"]
+      },
+      "reason": "throat swelling with breathing difficulty"
+    },
+    {
+      "id": "anaphylaxis_swelling_with_respiratory_compromise",
+      "category": "allergy",
+      "level": 1,
+      "priority": 96,
+      "conditions": {
+        "any": ["face_lip_tongue_swelling", "throat_swelling"],
+        "all": [
+          {
+            "any": ["breathing_difficulty", "not_breathing", "wheeze", "stridor_or_noisy_breathing"]
+          }
+        ]
+      },
+      "reason": "possible anaphylaxis: swelling with respiratory compromise"
+    },
+    {
+      "id": "submersion_with_blue_lips",
+      "category": "submersion",
+      "level": 1,
+      "priority": 95,
+      "conditions": {
+        "all": ["water_submersion"],
+        "any": ["blue_lips"]
+      },
+      "reason": "water submersion with blue lips"
+    },
+    {
+      "id": "fever_with_photophobia_meningitis_red_flag",
+      "category": "meningitis",
+      "level": 1,
+      "priority": 95,
+      "conditions": { "all": ["has_fever", "light_sensitivity"] },
+      "reason": "fever with light sensitivity / photophobia is a meningitis red flag"
+    },
+    {
+      "id": "cns_infection_fever_headache_vomiting_confusion",
+      "category": "meningitis",
+      "level": 1,
+      "priority": 95,
+      "conditions": {
+        "all": ["has_fever", "headache", "vomiting"],
+        "any": ["hard_to_wake", "lethargic", "unresponsive", "light_sensitivity", "stiff_neck"]
+      },
+      "reason": "fever with headache, vomiting and neurological/meningitis features"
+    },
+    {
+      "id": "strangulated_hernia_signs",
+      "category": "surgical",
+      "level": 1,
+      "priority": 95,
+      "conditions": { "any": ["strangulated_hernia_signs"] },
+      "reason": "strangulated hernia signs"
+    },
+    {
+      "id": "dka_diabetic_child",
+      "category": "endocrine",
+      "level": 1,
+      "priority": 95,
+      "conditions": {
+        "all": ["known_diabetic"],
+        "any": ["fruity_breath", "fast_breathing", "vomiting", "lethargic"]
+      },
+      "reason": "possible DKA in known diabetic child"
+    },
+    {
+      "id": "fever_under_3_months",
+      "category": "infant_fever",
+      "level": 1,
+      "priority": 94,
+      "conditions": {
+        "all": [
+          { "feature": "age_months", "op": "<", "value": 3 },
+          "has_fever"
+        ]
+      },
+      "reason": "fever in infant under 3 months — sepsis workup required, emergency"
+    },
+    {
+      "id": "suicidal_ideation_self_harm",
+      "category": "mental_health",
+      "level": 2,
+      "priority": 93,
+      "conditions": {
+        "any": ["suicidal_ideation", "self_harm"]
+      },
+      "reason": "suicidal ideation or active self-harm requires urgent mental health assessment"
+    },
+    {
+      "id": "infant_high_fever_under_6_months",
+      "category": "infant_fever",
+      "level": 2,
+      "priority": 93,
+      "conditions": {
+        "all": [
+          { "feature": "age_months", "op": "<=", "value": 6 },
+          { "feature": "temperature", "op": ">=", "value": 39.0 }
+        ]
+      },
+      "reason": "fever >=39C in infant <=6 months"
+    },
+    {
+      "id": "young_infant_significant_jaundice",
+      "category": "neonatal_jaundice",
+      "level": 2,
+      "priority": 92,
+      "conditions": {
+        "all": [
+          { "feature": "age_months", "op": "<=", "value": 1 },
+          "jaundice_or_yellow"
+        ],
+        "any": ["severe_or_early_jaundice", "poor_feeding", "lethargic", "hard_to_wake", "reduced_urine", "no_wet_diapers"]
+      },
+      "reason": "significant neonatal jaundice with red flags"
+    },
+    {
+      "id": "loss_of_consciousness_head_injury",
+      "category": "head_injury",
+      "level": 2,
+      "priority": 91,
+      "conditions": {
+        "any": ["loss_of_consciousness"]
+      },
+      "reason": "loss of consciousness requires urgent assessment"
+    },
+    {
+      "id": "infant_fever_lethargy",
+      "category": "infant_fever",
+      "level": 2,
+      "priority": 92,
+      "conditions": {
+        "all": [
+          { "feature": "age_months", "op": "<=", "value": 12 },
+          "has_fever"
+        ],
+        "any": ["lethargic", "hard_to_wake"]
+      },
+      "reason": "infant with fever and lethargy"
+    },
+    {
+      "id": "infant_fever_urinary_pain_irritability",
+      "category": "urinary_infant",
+      "level": 2,
+      "priority": 91,
+      "conditions": {
+        "all": [
+          { "feature": "age_months", "op": "<=", "value": 12 },
+          "has_fever"
+        ],
+        "any": ["urinary_pain", "very_irritable"]
+      },
+      "reason": "infant fever with urinary pain or irritability"
+    },
+    {
+      "id": "neonatal_jaundice_poor_feeding",
+      "category": "neonatal_jaundice",
+      "level": 2,
+      "priority": 91,
+      "conditions": {
+        "all": [
+          { "feature": "age_months", "op": "<=", "value": 1 },
+          "jaundice_or_yellow"
+        ],
+        "any": ["poor_feeding", "lethargic", "hard_to_wake"]
+      },
+      "reason": "neonatal jaundice with poor feeding or lethargy"
+    },
+    {
+      "id": "neonatal_infection_umbilicus",
+      "category": "neonatal",
+      "level": 2,
+      "priority": 88,
+      "conditions": {
+        "all": [
+          { "feature": "age_months", "op": "<=", "value": 2 },
+          "umbilical_redness_or_discharge"
+        ]
+      },
+      "reason": "umbilical redness or discharge in neonate — possible omphalitis"
+    },
+    {
+      "id": "severe_dehydration_sunken_irritable",
+      "category": "dehydration",
+      "level": 2,
+      "priority": 90,
+      "conditions": {
+        "all": ["sunken_eyes"],
+        "any": ["very_irritable", "sunken_fontanelle", "reduced_urine", "no_wet_diapers", "no_tears", "lethargic"]
+      },
+      "reason": "sunken eyes with dehydration signs"
+    },
+    {
+      "id": "appendicitis_or_surgical_abdominal_pain",
+      "category": "abdominal_pain",
+      "level": 2,
+      "priority": 89,
+      "conditions": { "any": ["appendicitis_signs"] },
+      "reason": "appendicitis signs"
+    },
+    {
+      "id": "severe_abdominal_pain_red_flag",
+      "category": "abdominal_pain",
+      "level": 2,
+      "priority": 88,
+      "conditions": { "any": ["severe_abdominal_pain"] },
+      "reason": "severe abdominal pain"
+    },
+    {
+      "id": "fever_with_flank_pain_pyelonephritis",
+      "category": "urinary",
+      "level": 2,
+      "priority": 88,
+      "conditions": { "all": ["has_fever", "flank_pain"] },
+      "reason": "fever with flank pain — pyelonephritis"
+    },
+    {
+      "id": "gross_hematuria",
+      "category": "urinary",
+      "level": 2,
+      "priority": 88,
+      "conditions": { "any": ["gross_hematuria"] },
+      "reason": "visible blood in urine"
+    },
+    {
+      "id": "measles_like_systemic_rash",
+      "category": "rash_systemic",
+      "level": 2,
+      "priority": 87,
+      "conditions": {
+        "all": ["has_fever"],
+        "any": ["measles_like_rash", "rash_starting_on_face"]
+      },
+      "reason": "fever with measles-like spreading rash"
+    },
+    {
+      "id": "respiratory_distress",
+      "category": "respiratory",
+      "level": 2,
+      "priority": 90,
+      "conditions": {
+        "any": ["breathing_difficulty", "chest_retractions", "grunting", "stridor_or_noisy_breathing", "prolonged_coughing_fit"]
+      },
+      "reason": "respiratory distress"
+    },
+    {
+      "id": "fast_breathing_in_infant",
+      "category": "respiratory",
+      "level": 2,
+      "priority": 89,
+      "conditions": {
+        "all": [
+          "fast_breathing",
+          { "feature": "age_months", "op": "<=", "value": 12 }
+        ]
+      },
+      "reason": "fast breathing in infant"
+    },
+    {
+      "id": "wheeze_with_breathing_difficulty",
+      "category": "respiratory",
+      "level": 2,
+      "priority": 88,
+      "conditions": { "all": ["wheeze", "breathing_difficulty"] },
+      "reason": "wheeze with breathing difficulty"
+    },
+    {
+      "id": "water_submersion_with_coughing",
+      "category": "submersion",
+      "level": 2,
+      "priority": 88,
+      "conditions": {
+        "all": ["water_submersion"],
+        "any": ["post_submersion_coughing", "breathing_difficulty", "fast_breathing", "chest_retractions", "grunting", "stridor_or_noisy_breathing"]
+      },
+      "reason": "water submersion with respiratory concern"
+    },
+    {
+      "id": "sore_throat_airway_risk",
+      "category": "sore_throat",
+      "level": 2,
+      "priority": 87,
+      "conditions": {
+        "all": ["sore_throat"],
+        "any": ["drooling", "cannot_swallow_saliva", "breathing_difficulty", "stridor_or_noisy_breathing"]
+      },
+      "reason": "sore throat with drooling or swallowing difficulty"
+    },
+    {
+      "id": "face_lip_tongue_throat_swelling",
+      "category": "allergy",
+      "level": 2,
+      "priority": 86,
+      "conditions": { "any": ["face_lip_tongue_swelling", "throat_swelling"] },
+      "reason": "face/lip/tongue/throat swelling"
+    },
+    {
+      "id": "possible_allergic_reaction_after_exposure",
+      "category": "allergy",
+      "level": 2,
+      "priority": 85,
+      "conditions": {
+        "all": ["allergen_exposure"],
+        "any": ["face_lip_tongue_swelling", "throat_swelling", "widespread_hives", "vomiting_after_allergen", "breathing_difficulty"]
+      },
+      "reason": "allergic reaction after allergen exposure with systemic signs"
+    },
+    {
+      "id": "spreading_rash_fever_cough",
+      "category": "rash_systemic",
+      "level": 2,
+      "priority": 84,
+      "conditions": {
+        "all": ["has_rash", "has_fever", "cough"],
+        "any": ["spreading_rash", "rash_starting_on_face"]
+      },
+      "reason": "spreading rash with fever and cough"
+    },
+    {
+      "id": "gastro_no_tears",
+      "category": "dehydration",
+      "level": 2,
+      "priority": 84,
+      "conditions": { "all": ["gastro_recent", "no_tears"] },
+      "reason": "gastro with no tears"
+    },
+    {
+      "id": "no_wet_diapers_refusing_fluids",
+      "category": "dehydration",
+      "level": 2,
+      "priority": 84,
+      "conditions": {
+        "all": ["no_wet_diapers"],
+        "any": ["refusing_fluids", "not_drinking"]
+      },
+      "reason": "no wet diapers with refusing fluids"
+    },
+    {
+      "id": "dehydration_score_high",
+      "category": "dehydration",
+      "level": 2,
+      "priority": 83,
+      "conditions": {
+        "all": [{ "feature": "dehydration_score", "op": ">=", "value": 3 }]
+      },
+      "reason": "high dehydration score"
+    },
+    {
+      "id": "fall_or_head_injury_significant",
+      "category": "head_injury",
+      "level": 2,
+      "priority": 82,
+      "conditions": {
+        "any": [
+          { "feature": "fall_from_height", "op": "severity_in", "value": ["moderate", "severe"] },
+          { "feature": "head_injury", "op": "severity_in", "value": ["moderate", "severe"] }
+        ]
+      },
+      "reason": "significant fall or head injury mechanism"
+    },
+    {
+      "id": "head_injury_vomiting_or_drowsy",
+      "category": "head_injury",
+      "level": 2,
+      "priority": 82,
+      "conditions": {
+        "all": ["head_injury"],
+        "any": ["vomiting_after_head_injury", "drowsy_after_head_injury"]
+      },
+      "reason": "head injury with vomiting or drowsiness"
+    },
+    {
+      "id": "burn_severe_or_moderate",
+      "category": "burns",
+      "level": 2,
+      "priority": 81,
+      "conditions": {
+        "all": [
+          { "feature": "burn", "op": "severity_in", "value": ["moderate", "severe"] }
+        ]
+      },
+      "reason": "moderate or severe burn"
+    },
+    {
+      "id": "deep_wound_significant",
+      "category": "wound",
+      "level": 2,
+      "priority": 79,
+      "conditions": {
+        "all": [
+          { "feature": "deep_wound", "op": "severity_in", "value": ["moderate", "severe"] }
+        ]
+      },
+      "reason": "deep wound may need stitches"
+    },
+    {
+      "id": "eye_injury",
+      "category": "eye",
+      "level": 2,
+      "priority": 79,
+      "conditions": { "any": ["eye_injury"] },
+      "reason": "eye injury"
+    },
+    {
+      "id": "foreign_body_nose_concerning",
+      "category": "foreign_body",
+      "level": 2,
+      "priority": 78,
+      "conditions": {
+        "all": [
+          { "feature": "foreign_body_nose", "op": "severity_in", "value": ["moderate", "severe"] }
+        ]
+      },
+      "reason": "foreign body in nose with concern or distress"
+    },
+    {
+      "id": "persistent_nosebleed",
+      "category": "nosebleed",
+      "level": 2,
+      "priority": 78,
+      "conditions": { "any": ["persistent_nosebleed"] },
+      "reason": "persistent nosebleed"
+    },
+    {
+      "id": "refusing_weight_bear_hot_joint",
+      "category": "musculoskeletal",
+      "level": 2,
+      "priority": 77,
+      "conditions": { "any": ["refusing_weight_bear", "sudden_limp", "hot_swollen_joint"] },
+      "reason": "refusing weight-bearing / hot swollen joint"
+    },
+    {
+      "id": "seizure",
+      "category": "seizure",
+      "level": 2,
+      "priority": 76,
+      "conditions": { "any": ["seizure"] },
+      "reason": "seizure"
+    },
+    {
+      "id": "plant_ingestion",
+      "category": "ingestion",
+      "level": 2,
+      "priority": 75,
+      "conditions": { "any": ["plant_ingestion"] },
+      "reason": "unknown plant ingestion"
+    },
+    {
+      "id": "severe_abdominal_pain_knees_up",
+      "category": "abdominal_pain",
+      "level": 2,
+      "priority": 75,
+      "conditions": { "all": ["severe_abdominal_pain", "knees_up"] },
+      "reason": "severe abdominal pain with knees drawn up"
+    },
+    {
+      "id": "sudden_severe_headache",
+      "category": "headache",
+      "level": 2,
+      "priority": 74,
+      "conditions": { "any": ["sudden_severe_headache"] },
+      "reason": "sudden severe / thunderclap headache"
+    },
+    {
+      "id": "worst_headache_red_flag",
+      "category": "headache",
+      "level": 2,
+      "priority": 74,
+      "conditions": { "all": ["worst_headache", "headache"] },
+      "reason": "worst headache red flag"
+    },
+    {
+      "id": "severe_headache_with_vomiting_or_neuro_features",
+      "category": "headache",
+      "level": 2,
+      "priority": 73,
+      "conditions": {
+        "any": ["worst_headache", "sudden_severe_headache"],
+        "all": [
+          {
+            "any": ["vomiting", "stiff_neck", "light_sensitivity", "unresponsive", "hard_to_wake"]
+          }
+        ]
+      },
+      "reason": "severe headache with vomiting or neurological features"
+    },
+    {
+      "id": "animal_bite_significant",
+      "category": "wound",
+      "level": 2,
+      "priority": 72,
+      "conditions": {
+        "all": [
+          { "feature": "animal_bite", "op": "severity_in", "value": ["moderate", "severe"] }
+        ]
+      },
+      "reason": "animal bite — wound care and rabies/infection risk assessment needed"
+    },
+    {
+      "id": "inconsolable_crying_infant",
+      "category": "infant_distress",
+      "level": 3,
+      "priority": 70,
+      "conditions": {
+        "all": [
+          { "feature": "age_months", "op": "<=", "value": 12 },
+          "very_irritable"
+        ],
+        "not": [
+          "has_fever",
+          "sunken_eyes",
+          "no_wet_diapers",
+          "vomiting"
+        ]
+      },
+      "reason": "prolonged inconsolable crying in infant without clear cause — needs assessment today"
+    },
+    {
+      "id": "high_fever_40",
+      "category": "fever",
+      "level": 3,
+      "priority": 60,
+      "conditions": {
+        "all": [{ "feature": "temperature", "op": ">=", "value": 40.0 }]
+      },
+      "reason": "high fever >=40C"
+    },
+    {
+      "id": "fever_39_6_to_12_months",
+      "category": "infant_fever",
+      "level": 3,
+      "priority": 59,
+      "conditions": {
+        "all": [
+          { "feature": "age_months", "op": ">", "value": 6 },
+          { "feature": "age_months", "op": "<=", "value": 12 },
+          { "feature": "temperature", "op": ">=", "value": 39.0 }
+        ]
+      },
+      "reason": "fever >=39C in 6-12 month infant"
+    },
+    {
+      "id": "swallowed_non_sharp_object_advice",
+      "category": "swallowed_object",
+      "level": 3,
+      "priority": 55,
+      "conditions": { "any": ["swallowed_non_sharp_object"] },
+      "reason": "swallowed small non-sharp object — needs imaging/GP review to confirm passage"
+    },
+    {
+      "id": "burn_mild_floor",
+      "category": "burns",
+      "level": 4,
+      "priority": 34,
+      "conditions": {
+        "all": [
+          { "feature": "burn", "op": "severity_is", "value": "mild" }
+        ]
+      },
+      "reason": "small superficial burn — home care with GP review if worsening"
+    },
+    {
+      "id": "foreign_body_nose_visible_calm",
+      "category": "foreign_body",
+      "level": 4,
+      "priority": 34,
+      "conditions": {
+        "all": [
+          { "feature": "foreign_body_nose", "op": "severity_is", "value": "mild" }
+        ]
+      },
+      "reason": "visible nasal foreign body, child calm — GP/clinic removal today"
+    },
+    {
+      "id": "deep_wound_minor",
+      "category": "wound",
+      "level": 4,
+      "priority": 33,
+      "conditions": {
+        "all": [
+          { "feature": "deep_wound", "op": "severity_is", "value": "mild" }
+        ]
+      },
+      "reason": "minor wound — clean and monitor, GP review if not healing"
+    },
+    {
+      "id": "minor_fall_floor",
+      "category": "head_injury",
+      "level": 4,
+      "priority": 33,
+      "conditions": {
+        "any": [
+          { "feature": "fall_from_height", "op": "severity_is", "value": "mild" },
+          { "feature": "head_injury", "op": "severity_is", "value": "mild" }
+        ],
+        "not": ["vomiting_after_head_injury", "drowsy_after_head_injury", "loss_of_consciousness"]
+      },
+      "reason": "minor bump, child well — home monitoring advice"
+    },
+    {
+      "id": "animal_bite_minor",
+      "category": "wound",
+      "level": 4,
+      "priority": 33,
+      "conditions": {
+        "all": [
+          { "feature": "animal_bite", "op": "severity_is", "value": "mild" }
+        ]
+      },
+      "reason": "minor animal scratch/bite — clean wound, GP review for vaccination check"
+    },
+    {
+      "id": "isolated_hives_no_red_flag",
+      "category": "allergy",
+      "level": 4,
+      "priority": 32,
+      "conditions": {
+        "all": [
+          { "feature": "hives", "op": "is_true" }
+        ],
+        "not": [
+          "face_lip_tongue_swelling",
+          "throat_swelling",
+          "breathing_difficulty",
+          "not_breathing",
+          "vomiting_after_allergen",
+          "widespread_hives",
+          "wheeze"
+        ]
+      },
+      "reason": "isolated hives without airway or systemic signs — antihistamine and monitor"
+    },
+    {
+      "id": "mild_neonatal_jaundice_floor",
+      "category": "neonatal_jaundice",
+      "level": 4,
+      "priority": 30,
+      "conditions": {
+        "all": [
+          { "feature": "age_months", "op": "<=", "value": 1 },
+          "jaundice_or_yellow"
+        ]
+      },
+      "reason": "jaundice in young baby — needs medical review"
+    },
+    {
+      "id": "mild_medical_symptom_floor",
+      "category": "general",
+      "level": 4,
+      "priority": 10,
+      "conditions": { "any": ["mild_medical_symptom"] },
+      "reason": "medical symptom without deterministic red flag"
+    }
+  ]
+}

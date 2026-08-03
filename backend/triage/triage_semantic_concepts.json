@@ -1,0 +1,607 @@
+{
+  "version": "1.0",
+  "model": "all-MiniLM-L6-v2",
+  "description": "Semantic feature concepts for pediatric triage. These concepts set clinical features only; they do not directly decide triage level.",
+  "concepts": [
+    {
+      "id": "no_tears",
+      "set_features": ["no_tears"],
+      "threshold": 0.58,
+      "medical_signal": true,
+      "exemplars": [
+        "child cries but no tears come out",
+        "there are no tears when crying",
+        "crying without tears",
+        "tears are not coming out",
+        "not making tears when upset"
+      ],
+      "negative_patterns": []
+    },
+    {
+      "id": "no_wet_diapers",
+      "set_features": ["no_wet_diapers", "reduced_urine"],
+      "threshold": 0.58,
+      "medical_signal": true,
+      "exemplars": [
+        "has not had a wet diaper for many hours",
+        "no wet nappies today",
+        "not passing urine",
+        "has not peed since morning",
+        "very few wet diapers"
+      ],
+      "negative_patterns": [
+        "normal wet nappies",
+        "normal wet diapers",
+        "plenty of wet nappies",
+        "plenty of wet diapers",
+        "wetting nappies normally",
+        "wetting diapers normally"
+      ]
+    },
+    {
+      "id": "refusing_fluids",
+      "set_features": ["refusing_fluids", "not_drinking"],
+      "threshold": 0.58,
+      "medical_signal": true,
+      "exemplars": [
+        "refusing to drink",
+        "will not drink anything",
+        "not taking fluids",
+        "refusing drinks",
+        "cannot get him to drink"
+      ],
+      "negative_patterns": [
+        "drinking well",
+        "drinking normally",
+        "taking fluids well",
+        "feeding well"
+      ]
+    },
+    {
+      "id": "sunken_eyes",
+      "set_features": ["sunken_eyes"],
+      "threshold": 0.60,
+      "medical_signal": true,
+      "exemplars": [
+        "eyes look sunken",
+        "eyes are sunken in",
+        "face looks drawn and eyes sunken",
+        "sunken eyes after vomiting and diarrhea"
+      ],
+      "negative_patterns": []
+    },
+    {
+      "id": "poor_feeding",
+      "set_features": ["poor_feeding"],
+      "threshold": 0.57,
+      "medical_signal": true,
+      "exemplars": [
+        "not feeding well",
+        "feeding poorly",
+        "too sleepy to feed",
+        "not taking milk",
+        "baby is not feeding like usual"
+      ],
+      "negative_patterns": [
+        "feeding well",
+        "breastfeeding well",
+        "bottle feeding well",
+        "taking milk well"
+      ]
+    },
+    {
+      "id": "lethargic_or_hard_to_wake",
+      "set_features": ["lethargic"],
+      "threshold": 0.60,
+      "medical_signal": true,
+      "exemplars": [
+        "very sleepy and not acting normally",
+        "lethargic and floppy",
+        "hard to wake",
+        "not responding normally",
+        "much sleepier than usual"
+      ],
+      "negative_patterns": [
+        "not sleepy",
+        "acting normally",
+        "playing normally",
+        "alert and active"
+      ]
+    },
+    {
+      "id": "very_irritable",
+      "set_features": ["very_irritable"],
+      "threshold": 0.58,
+      "medical_signal": true,
+      "exemplars": [
+        "very irritable and cannot be settled",
+        "inconsolable crying",
+        "crying nonstop and cannot settle",
+        "extremely unsettled",
+        "won't calm down"
+      ],
+      "negative_patterns": [
+        "settles easily",
+        "calms down",
+        "happy and settled"
+      ]
+    },
+
+    {
+      "id": "water_submersion",
+      "set_features": ["water_submersion"],
+      "threshold": 0.57,
+      "medical_signal": true,
+      "exemplars": [
+        "went under the water in the pool",
+        "fell into the pool and was underwater",
+        "submerged in water",
+        "face down in the paddling pool",
+        "slipped under water for a few seconds",
+        "near drowning event"
+      ],
+      "negative_patterns": [
+        "swallowed a little bath water",
+        "coughed once on water",
+        "splashed water",
+        "water went in mouth"
+      ]
+    },
+    {
+      "id": "post_submersion_coughing",
+      "set_features": ["post_submersion_coughing"],
+      "threshold": 0.57,
+      "medical_signal": true,
+      "exemplars": [
+        "coughed a lot after being pulled out of water",
+        "kept coughing after going under water",
+        "coughed for several minutes after submersion",
+        "inhaled water and was coughing"
+      ],
+      "negative_patterns": [
+        "coughed once",
+        "brief cough",
+        "breathing normally and playing"
+      ]
+    },
+
+    {
+      "id": "breathing_difficulty",
+      "set_features": ["breathing_difficulty"],
+      "threshold": 0.59,
+      "medical_signal": true,
+      "exemplars": [
+        "struggling to breathe",
+        "having trouble breathing",
+        "working hard to breathe",
+        "cannot breathe properly",
+        "breathing looks difficult"
+      ],
+      "negative_patterns": [
+        "breathing normally",
+        "no trouble breathing",
+        "no breathing problems",
+        "breathing comfortably"
+      ]
+    },
+    {
+      "id": "chest_retractions",
+      "set_features": ["chest_retractions"],
+      "threshold": 0.59,
+      "medical_signal": true,
+      "exemplars": [
+        "skin pulling in under the ribs",
+        "ribs sucking in when breathing",
+        "chest pulling in with each breath",
+        "retractions under ribs"
+      ],
+      "negative_patterns": []
+    },
+    {
+      "id": "stridor_or_noisy_breathing",
+      "set_features": ["stridor_or_noisy_breathing"],
+      "threshold": 0.60,
+      "medical_signal": true,
+      "exemplars": [
+        "noisy breathing when breathing in",
+        "stridor",
+        "harsh noisy breathing",
+        "barking cough with noisy breathing",
+        "high pitched breathing noise"
+      ],
+      "negative_patterns": [
+        "no noisy breathing",
+        "without noisy breathing",
+        "no stridor",
+        "breathing comfortably"
+      ]
+    },
+    {
+      "id": "grunting",
+      "set_features": ["grunting"],
+      "threshold": 0.62,
+      "medical_signal": true,
+      "exemplars": [
+        "grunting with each breath",
+        "making grunting noises when breathing",
+        "baby grunts every time he breathes"
+      ],
+      "negative_patterns": []
+    },
+
+    {
+      "id": "sore_throat_airway",
+      "set_features": ["sore_throat", "drooling", "cannot_swallow_saliva"],
+      "threshold": 0.59,
+      "medical_signal": true,
+      "exemplars": [
+        "sore throat and drooling because cannot swallow saliva",
+        "throat pain and unable to swallow saliva",
+        "drooling with sore throat",
+        "muffled voice and drooling",
+        "cannot swallow spit because throat hurts"
+      ],
+      "negative_patterns": [
+        "can drink water",
+        "able to swallow",
+        "swallowing hurts but can drink"
+      ]
+    },
+    {
+      "id": "throat_swelling",
+      "set_features": ["throat_swelling"],
+      "threshold": 0.59,
+      "medical_signal": true,
+      "exemplars": [
+        "throat feels swollen",
+        "throat is closing",
+        "throat swelling after food",
+        "says throat feels funny after allergen"
+      ],
+      "negative_patterns": []
+    },
+
+    {
+      "id": "allergic_swelling",
+      "set_features": ["face_lip_tongue_swelling"],
+      "threshold": 0.58,
+      "medical_signal": true,
+      "exemplars": [
+        "lips are swelling",
+        "face is swelling after eating",
+        "tongue looks swollen",
+        "swollen lips after peanut",
+        "mouth and lips swelling"
+      ],
+      "negative_patterns": [
+        "no swelling",
+        "without swelling"
+      ]
+    },
+    {
+      "id": "widespread_hives",
+      "set_features": ["hives", "widespread_hives"],
+      "threshold": 0.58,
+      "medical_signal": true,
+      "exemplars": [
+        "hives all over the body",
+        "widespread hives",
+        "rash all over after food",
+        "covered in itchy hives"
+      ],
+      "negative_patterns": [
+        "few hives",
+        "small patch",
+        "only on the arm",
+        "localized hives"
+      ]
+    },
+
+    {
+      "id": "non_blanching_rash",
+      "set_features": ["has_rash", "non_blanching_rash"],
+      "threshold": 0.58,
+      "medical_signal": true,
+      "exemplars": [
+        "purple spots that do not fade when pressed",
+        "rash does not disappear with glass test",
+        "non blanching rash",
+        "tiny purple dots that stay when pressed",
+        "dark spots that do not go away when pressed"
+      ],
+      "negative_patterns": [
+        "rash fades",
+        "spots fade",
+        "blanches"
+      ]
+    },
+    {
+      "id": "spreading_rash_face_down",
+      "set_features": ["has_rash", "spreading_rash", "rash_starting_on_face"],
+      "threshold": 0.58,
+      "medical_signal": true,
+      "exemplars": [
+        "rash started on the face and spread down",
+        "red blotchy rash beginning on face and moving down body",
+        "rash spreading from face downwards",
+        "blotchy rash with fever and cough spreading down"
+      ],
+      "negative_patterns": []
+    },
+    {
+      "id": "stiff_neck",
+      "set_features": ["stiff_neck"],
+      "threshold": 0.60,
+      "medical_signal": true,
+      "exemplars": [
+        "very stiff neck",
+        "neck is stiff and painful",
+        "cannot bend neck forward",
+        "stiff neck with fever"
+      ],
+      "negative_patterns": [
+        "no stiff neck",
+        "without stiff neck"
+      ]
+    },
+    {
+      "id": "light_sensitivity",
+      "set_features": ["light_sensitivity"],
+      "threshold": 0.60,
+      "medical_signal": true,
+      "exemplars": [
+        "light hurts her eyes",
+        "cannot tolerate bright light",
+        "sensitive to light",
+        "photophobia"
+      ],
+      "negative_patterns": [
+        "not sensitive to light",
+        "no light sensitivity"
+      ]
+    },
+
+    {
+      "id": "sudden_severe_headache",
+      "set_features": ["headache", "sudden_severe_headache"],
+      "threshold": 0.58,
+      "medical_signal": true,
+      "exemplars": [
+        "sudden thunderclap headache",
+        "suddenly screamed with severe headache",
+        "sudden worst headache",
+        "headache came on suddenly and very severe"
+      ],
+      "negative_patterns": [
+        "mild headache",
+        "headache after school",
+        "no vomiting, fever, stiff neck"
+      ]
+    },
+    {
+      "id": "worst_headache",
+      "set_features": ["headache", "worst_headache"],
+      "threshold": 0.58,
+      "medical_signal": true,
+      "exemplars": [
+        "worst headache of her life",
+        "worst head pain ever",
+        "says this is the worst headache",
+        "severe headache and vomiting"
+      ],
+      "negative_patterns": [
+        "mild headache",
+        "slight headache"
+      ]
+    },
+
+    {
+      "id": "fall_from_height",
+      "set_features": ["fall_from_height", "head_injury"],
+      "threshold": 0.57,
+      "medical_signal": true,
+      "exemplars": [
+        "fell from playground equipment",
+        "fell off a bed",
+        "fell from changing table",
+        "dropped from the sofa",
+        "fell down stairs",
+        "rolled off the bed"
+      ],
+      "negative_patterns": [
+        "minor bump",
+        "bumped head while running",
+        "tripped and now playing normally"
+      ]
+    },
+    {
+      "id": "drowsy_after_head_injury",
+      "set_features": ["drowsy_after_head_injury"],
+      "threshold": 0.58,
+      "medical_signal": true,
+      "exemplars": [
+        "after falling he seems confused",
+        "hit head and now very sleepy",
+        "head injury followed by drowsiness",
+        "fell and is not acting normally"
+      ],
+      "negative_patterns": [
+        "playing normally",
+        "acting normally",
+        "no vomiting",
+        "not drowsy"
+      ]
+    },
+
+    {
+      "id": "deep_wound",
+      "set_features": ["deep_wound"],
+      "threshold": 0.57,
+      "medical_signal": true,
+      "exemplars": [
+        "deep wound and can see white tissue",
+        "deep cut may need stitches",
+        "large gash with tissue visible",
+        "cut is deep and open",
+        "can see fat or tissue inside the wound"
+      ],
+      "negative_patterns": [
+        "small scrape",
+        "minor graze",
+        "stopped bleeding",
+        "small cut"
+      ]
+    },
+    {
+      "id": "hot_swollen_joint",
+      "set_features": ["hot_swollen_joint"],
+      "threshold": 0.57,
+      "medical_signal": true,
+      "exemplars": [
+        "knee is hot red and swollen",
+        "swollen painful hot joint",
+        "ankle is red hot and swollen",
+        "joint looks inflamed and child will not walk"
+      ],
+      "negative_patterns": [
+        "a bit sore",
+        "can still walk",
+        "minor ankle injury"
+      ]
+    },
+    {
+      "id": "refusing_weight_bear",
+      "set_features": ["refusing_weight_bear"],
+      "threshold": 0.57,
+      "medical_signal": true,
+      "exemplars": [
+        "refuses to walk",
+        "will not put weight on leg",
+        "cannot stand on the leg",
+        "refusing to bear weight",
+        "will not walk because of pain"
+      ],
+      "negative_patterns": [
+        "can still walk",
+        "walking normally",
+        "can bear weight"
+      ]
+    },
+
+    {
+      "id": "jaundice_or_yellow",
+      "set_features": ["jaundice_or_yellow"],
+      "threshold": 0.57,
+      "medical_signal": true,
+      "exemplars": [
+        "newborn looks yellow",
+        "baby has yellow eyes",
+        "yellow skin in a newborn",
+        "jaundice in a baby",
+        "eyes are a little yellow"
+      ],
+      "negative_patterns": []
+    },
+    {
+      "id": "swallowed_non_sharp_object",
+      "set_features": ["swallowed_non_sharp_object"],
+      "threshold": 0.57,
+      "medical_signal": true,
+      "exemplars": [
+        "swallowed a smooth lego piece",
+        "swallowed a small coin",
+        "ate a small plastic toy piece",
+        "swallowed a bead",
+        "swallowed small smooth object and is breathing normally"
+      ],
+      "negative_patterns": [
+        "button battery",
+        "magnet",
+        "sharp",
+        "choking",
+        "cannot breathe"
+      ]
+    },
+    {
+      "id": "button_battery_or_magnet",
+      "set_features": ["swallowed_battery_or_magnet"],
+      "threshold": 0.58,
+      "medical_signal": true,
+      "exemplars": [
+        "swallowed a button battery",
+        "ate a watch battery",
+        "may have swallowed a magnet",
+        "swallowed small round battery from remote"
+      ],
+      "negative_patterns": []
+    },
+    {
+      "id": "medicine_or_chemical_ingestion",
+      "set_features": ["swallowed_medicine_or_chemical"],
+      "threshold": 0.58,
+      "medical_signal": true,
+      "exemplars": [
+        "ate prescription tablets",
+        "swallowed medication",
+        "drank bleach cleaner",
+        "drank cleaning liquid",
+        "ate some pills"
+      ],
+      "negative_patterns": []
+    },
+    {
+      "id": "plant_ingestion",
+      "set_features": ["plant_ingestion"],
+      "threshold": 0.57,
+      "medical_signal": true,
+      "exemplars": [
+        "chewed a leaf from a plant",
+        "ate part of a house plant",
+        "swallowed berries from a plant",
+        "chewed unknown plant"
+      ],
+      "negative_patterns": []
+    },
+
+    {
+      "id": "burn_hot_liquid",
+      "set_features": ["burn"],
+      "set_values": {
+        "burn_source": "hot_liquid"
+      },
+      "threshold": 0.57,
+      "medical_signal": true,
+      "exemplars": [
+        "pulled boiling water onto skin",
+        "spilled hot tea on arm",
+        "hot coffee scalded the child",
+        "hot water burn with blistering"
+      ],
+      "negative_patterns": [
+        "warm spoon",
+        "not red",
+        "no burn"
+      ]
+    },
+    {
+      "id": "burn_hot_surface",
+      "set_features": ["burn"],
+      "set_values": {
+        "burn_source": "hot_surface"
+      },
+      "threshold": 0.57,
+      "medical_signal": true,
+      "exemplars": [
+        "touched hot oven door",
+        "burned hand on hot stove",
+        "touched hot iron",
+        "burn from heater"
+      ],
+      "negative_patterns": [
+        "warm spoon",
+        "not red",
+        "no burn"
+      ]
+    }
+  ]
+}
