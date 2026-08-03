@@ -1,0 +1,454 @@
+{
+  "test_cases": [
+    {
+      "id": "H101",
+      "category": "airway_obstruction",
+      "input": "My 15-month-old was eating a piece of apple and suddenly started choking. He cannot cough or cry, and his face is turning red.",
+      "child_age_months": 15,
+      "expected_level": 1,
+      "expected_concept": "airway_obstruction",
+      "rationale": "Complete airway obstruction with inability to vocalize in a toddler is an immediate life threat."
+    },
+    {
+      "id": "H102",
+      "category": "anaphylaxis",
+      "input": "She had scrambled egg for the first time and now her face and lips are swelling up. She is wheezing and struggling to get air.",
+      "child_age_months": 11,
+      "expected_level": 1,
+      "expected_concept": "anaphylaxis",
+      "rationale": "Systemic allergic reaction with respiratory involvement (wheezing, dyspnea) is anaphylaxis."
+    },
+    {
+      "id": "H103",
+      "category": "altered_mental_status",
+      "input": "He has a high fever and is very confused. He doesn't recognize me or his favorite toy and is just staring blankly.",
+      "child_age_months": 36,
+      "expected_level": 1,
+      "expected_concept": "altered_mental_status",
+      "rationale": "High fever accompanied by acute altered mental status suggests a severe CNS infection."
+    },
+    {
+      "id": "H104",
+      "category": "seizure",
+      "input": "My son has been having a seizure for around 8 minutes now. His arms and legs are shaking, and he is not responding to us.",
+      "child_age_months": 40,
+      "expected_level": 1,
+      "expected_concept": "seizure",
+      "rationale": "A seizure lasting longer than 5 minutes is status epilepticus and requires immediate intervention."
+    },
+    {
+      "id": "H105",
+      "category": "lethargy",
+      "input": "My baby is limp in my arms and I cannot wake her up. She is breathing but won't open her eyes or make any sound.",
+      "child_age_months": 3,
+      "expected_level": 1,
+      "expected_concept": "lethargy",
+      "rationale": "A floppy, unresponsive infant who cannot be aroused is a critical medical emergency."
+    },
+    {
+      "id": "H106",
+      "category": "submersion",
+      "input": "He fell face down into a pond for a short time. We pulled him out and he is coughing a lot and seems unusually sleepy.",
+      "child_age_months": 28,
+      "expected_level": 1,
+      "expected_concept": "submersion",
+      "rationale": "Any submersion event with subsequent respiratory symptoms or lethargy requires urgent critical care."
+    },
+    {
+      "id": "H107",
+      "category": "ingestion",
+      "input": "I saw my 2-year-old put a small flat button battery in her mouth and swallow it. She is crying but breathing normally.",
+      "child_age_months": 24,
+      "expected_level": 1,
+      "expected_concept": "ingestion",
+      "rationale": "Button battery ingestion is an extreme emergency due to rapid tissue necrosis risk."
+    },
+    {
+      "id": "H108",
+      "category": "meningitis_rash",
+      "input": "My daughter has a fever and dark purple spots on her stomach. When I press a clear glass against them, they do not fade.",
+      "child_age_months": 18,
+      "expected_level": 1,
+      "expected_concept": "meningitis_rash",
+      "rationale": "Fever with a non-blanching petechial/purpuric rash is a classic sign of meningococcemia."
+    },
+    {
+      "id": "H109",
+      "category": "neonatal_fever",
+      "input": "My 7-week-old baby has a temperature of 38.3 Celsius but is still awake and feeding.",
+      "child_age_months": 1.75,
+      "expected_level": 2,
+      "expected_concept": "neonatal_fever",
+      "rationale": "Fever >= 38.0C in any infant under 90 days requires a full sepsis workup."
+    },
+    {
+      "id": "H110",
+      "category": "dehydration",
+      "input": "My 20-month-old has had diarrhea and vomiting for two days. Her eyes look sunken, she is very irritable, and her diapers are dry.",
+      "child_age_months": 20,
+      "expected_level": 2,
+      "expected_concept": "dehydration",
+      "rationale": "Sunken eyes, extreme irritability, and lack of wet diapers indicate severe clinical dehydration."
+    },
+    {
+      "id": "H111",
+      "category": "head_injury",
+      "input": "He fell from a climbing frame and hit the back of his head. He vomited twice afterwards and keeps falling asleep.",
+      "child_age_months": 48,
+      "expected_level": 2,
+      "expected_concept": "head_injury",
+      "rationale": "Head trauma followed by persistent vomiting and progressive drowsiness suggests intracranial pathology."
+    },
+    {
+      "id": "H112",
+      "category": "respiratory_distress",
+      "input": "My baby has a cough and is breathing fast. I can see the skin between her ribs pulling in and her nostrils are flaring.",
+      "child_age_months": 9,
+      "expected_level": 2,
+      "expected_concept": "respiratory_distress",
+      "rationale": "Tachypnea accompanied by intercostal retractions and nasal flaring indicates moderate respiratory distress."
+    },
+    {
+      "id": "H113",
+      "category": "stridor",
+      "input": "He has a barking cough and a loud squeaky noise when he breathes in, even while resting on my lap.",
+      "child_age_months": 14,
+      "expected_level": 2,
+      "expected_concept": "stridor",
+      "rationale": "Inspiratory stridor at rest indicates significant upper airway narrowing (croup) requiring urgent steroids."
+    },
+    {
+      "id": "H114",
+      "category": "appendicitis",
+      "input": "My 10-year-old has severe pain on the lower right side of her belly. It hurts too much for her to walk or jump.",
+      "child_age_months": 120,
+      "expected_level": 2,
+      "expected_concept": "appendicitis",
+      "rationale": "Localized right lower quadrant abdominal pain that worsens with movement is highly suspicious for acute appendicitis."
+    },
+    {
+      "id": "H115",
+      "category": "testicular_pain",
+      "input": "My 13-year-old suddenly developed intense pain in his testicle and feels like vomiting. There was no injury.",
+      "child_age_months": 156,
+      "expected_level": 2,
+      "expected_concept": "testicular_pain",
+      "rationale": "Acute, spontaneous testicular pain is testicular torsion until proven otherwise; surgical window is narrow."
+    },
+    {
+      "id": "H116",
+      "category": "poisoning",
+      "input": "I found my toddler next to an open packet of my medicine and I am not sure if he swallowed any.",
+      "child_age_months": 24,
+      "expected_level": 2,
+      "expected_concept": "poisoning",
+      "rationale": "Possible ingestion of unknown adult medication requires immediate emergency evaluation."
+    },
+    {
+      "id": "H117",
+      "category": "animal_bite",
+      "input": "A neighbor's dog bit my child's forearm. There are deep tooth marks and the wound is bleeding.",
+      "child_age_months": 72,
+      "expected_level": 2,
+      "expected_concept": "animal_bite",
+      "rationale": "Deep animal bites carry a very high risk of infection and rabies, requiring urgent medical care."
+    },
+    {
+      "id": "H118",
+      "category": "burn",
+      "input": "Boiling water spilled onto his chest and shoulder, the skin is red with several blisters.",
+      "child_age_months": 36,
+      "expected_level": 2,
+      "expected_concept": "burn",
+      "rationale": "Partial-thickness burns on a sensitive area (chest) in a toddler require urgent professional assessment."
+    },
+    {
+      "id": "H119",
+      "category": "wound",
+      "input": "She cut her foot on broken glass. I have held firm pressure for 20 minutes but it is still bleeding heavily.",
+      "child_age_months": 60,
+      "expected_level": 2,
+      "expected_concept": "wound",
+      "rationale": "Active, heavy bleeding that cannot be controlled with 20 minutes of direct pressure requires urgent wound care."
+    },
+    {
+      "id": "H120",
+      "category": "septic_arthritis",
+      "input": "My child has a fever and his ankle is hot and swollen. He refuses to put any weight on that foot.",
+      "child_age_months": 48,
+      "expected_level": 2,
+      "expected_concept": "septic_arthritis",
+      "rationale": "A hot, swollen joint with refusal to bear weight suggests septic arthritis, a pediatric orthopedic emergency."
+    },
+    {
+      "id": "H121",
+      "category": "high_fever",
+      "input": "My 5-year-old has a fever of 39.9 Celsius but is drinking water, talking to me, and playing with his tablet.",
+      "child_age_months": 60,
+      "expected_level": 3,
+      "expected_concept": "high_fever",
+      "rationale": "High fever in an older, clinically well-appearing child without red flags needs same-day evaluation."
+    },
+    {
+      "id": "H122",
+      "category": "ear_pain",
+      "input": "My 2-year-old has been crying and holding his right ear. He has a runny nose and a temperature of 38.4 Celsius.",
+      "child_age_months": 24,
+      "expected_level": 3,
+      "expected_concept": "ear_pain",
+      "rationale": "Acute otitis media with fever in a toddler requires medical evaluation within 24 hours."
+    },
+    {
+      "id": "H123",
+      "category": "urinary_tract_infection",
+      "input": "She says it hurts when she pees and she keeps needing to go to the bathroom. Tonight she also has a fever.",
+      "child_age_months": 72,
+      "expected_level": 3,
+      "expected_concept": "urinary_tract_infection",
+      "rationale": "Dysuria combined with fever in a child suggests a symptomatic urinary tract infection needing antibiotics."
+    },
+    {
+      "id": "H124",
+      "category": "vomiting",
+      "input": "He has vomited six times today, but he is alert, playing, and able to sip small amounts of water without throwing up.",
+      "child_age_months": 36,
+      "expected_level": 3,
+      "expected_concept": "vomiting",
+      "rationale": "Frequent vomiting but with preserved hydration and normal mental status requires a same-day medical review."
+    },
+    {
+      "id": "H125",
+      "category": "mild_wheeze",
+      "input": "My daughter has a cold and a mild wheeze. She is playing normally and eating well.",
+      "child_age_months": 48,
+      "expected_level": 3,
+      "expected_concept": "mild_wheeze",
+      "rationale": "A new wheeze, even if mild and without distress, requires clinical auscultation and evaluation."
+    },
+    {
+      "id": "H126",
+      "category": "strep_throat",
+      "input": "He has a sore throat, fever, and white patches on the back of his throat. He is refusing solid food.",
+      "child_age_months": 96,
+      "expected_level": 3,
+      "expected_concept": "strep_throat",
+      "rationale": "Tonsillopharyngitis with exudates and fever requires a swab to rule out Group A Strep."
+    },
+    {
+      "id": "H127",
+      "category": "limp",
+      "input": "She twisted her knee while running yesterday. She is limping today but there is no obvious swelling or deformity.",
+      "child_age_months": 84,
+      "expected_level": 3,
+      "expected_concept": "limp",
+      "rationale": "A post-traumatic limp without joint deformity or severe pain should be clinically evaluated within 24 hours."
+    },
+    {
+      "id": "H128",
+      "category": "eye_injury",
+      "input": "My son poked his eye with a cardboard corner. It is a little red but he can see fine.",
+      "child_age_months": 60,
+      "expected_level": 3,
+      "expected_concept": "eye_injury",
+      "rationale": "Minor corneal abrasion or eye trauma without vision changes needs same-day ophthalmic evaluation."
+    },
+    {
+      "id": "H129",
+      "category": "fever_rash",
+      "input": "My 4-year-old has a fever and a pink rash on her torso. The spots turn white when I press them.",
+      "child_age_months": 48,
+      "expected_level": 3,
+      "expected_concept": "fever_rash",
+      "rationale": "Fever with a blanching rash is typically viral but warrants a same-day clinical review."
+    },
+    {
+      "id": "H130",
+      "category": "constipation",
+      "input": "My child has not had a bowel movement for five days and is complaining of stomach pain when he tries to go.",
+      "child_age_months": 48,
+      "expected_level": 3,
+      "expected_concept": "constipation",
+      "rationale": "Persistent constipation with significant pain requires clinical evaluation and medical management."
+    },
+    {
+      "id": "H131",
+      "category": "minor_burn",
+      "input": "She touched a hot spoon and now has a small red mark on her finger. There are no blisters.",
+      "child_age_months": 36,
+      "expected_level": 4,
+      "expected_concept": "minor_burn",
+      "rationale": "Superficial first-degree burn with no blistering or large surface area can be managed with home care."
+    },
+    {
+      "id": "H132",
+      "category": "foreign_body_nose",
+      "input": "He pushed a tiny piece of paper into one nostril. It is visible and he is breathing fine and not distressed.",
+      "child_age_months": 42,
+      "expected_level": 4,
+      "expected_concept": "foreign_body_nose",
+      "rationale": "Nasal foreign body in a calm child without respiratory distress can be removed at a local clinic or GP."
+    },
+    {
+      "id": "H133",
+      "category": "minor_wound",
+      "input": "My daughter scratched her hand on a toy. It bled a tiny bit but has stopped. The scratch is very shallow.",
+      "child_age_months": 18,
+      "expected_level": 4,
+      "expected_concept": "minor_wound",
+      "rationale": "Minor, superficial scratch with controlled bleeding requires only basic first aid and cleaning."
+    },
+    {
+      "id": "H134",
+      "category": "hives",
+      "input": "He has a few itchy hives on his arm after playing in the grass. No other symptoms.",
+      "child_age_months": 60,
+      "expected_level": 4,
+      "expected_concept": "hives",
+      "rationale": "Localized hives without any systemic or airway symptoms can be managed with antihistamines."
+    },
+    {
+      "id": "H135",
+      "category": "diaper_rash",
+      "input": "My 9-month-old has a red sore-looking diaper rash. He cries a little when I wipe him.",
+      "child_age_months": 9,
+      "expected_level": 4,
+      "expected_concept": "diaper_rash",
+      "rationale": "Standard diaper dermatitis can be managed with barrier creams and air exposure."
+    },
+    {
+      "id": "H136",
+      "category": "conjunctivitis",
+      "input": "Her eye is red with some sticky discharge after sleep, no pain, vision is normal.",
+      "child_age_months": 48,
+      "expected_level": 4,
+      "expected_concept": "conjunctivitis",
+      "rationale": "Suspected mild conjunctivitis without pain or vision loss is a routine primary care issue."
+    },
+    {
+      "id": "H137",
+      "category": "minor_head_injury",
+      "input": "He bumped his forehead on the table, cried immediately, no vomiting, acting normal now.",
+      "child_age_months": 36,
+      "expected_level": 4,
+      "expected_concept": "minor_head_injury",
+      "rationale": "Minor head bump with immediate crying and no neurological symptoms can be observed at home."
+    },
+    {
+      "id": "H138",
+      "category": "gastroenteritis",
+      "input": "She had one episode of vomiting and two loose stools but is drinking and peeing normally.",
+      "child_age_months": 24,
+      "expected_level": 4,
+      "expected_concept": "gastroenteritis",
+      "rationale": "Mild self-limiting gastrointestinal symptoms with good hydration can be managed at home."
+    },
+    {
+      "id": "H139",
+      "category": "insect_bite",
+      "input": "My child has a red itchy mosquito bite on his leg. There is no swelling or pus.",
+      "child_age_months": 60,
+      "expected_level": 4,
+      "expected_concept": "insect_bite",
+      "rationale": "Uncomplicated insect bite requires only local symptomatic relief (calamine/cool compress)."
+    },
+    {
+      "id": "H140",
+      "category": "splinter",
+      "input": "There is a tiny splinter in her thumb from a wooden bench. It is near the surface.",
+      "child_age_months": 48,
+      "expected_level": 4,
+      "expected_concept": "splinter",
+      "rationale": "Superficial splinter without signs of infection can be safely removed at home with tweezers."
+    },
+    {
+      "id": "H141",
+      "category": "eczema",
+      "input": "My son has dry itchy patches behind his knees. They are red but not oozing or warm.",
+      "child_age_months": 30,
+      "expected_level": 4,
+      "expected_concept": "eczema",
+      "rationale": "Mild eczema flare-up without secondary infection can be managed with moisturizers."
+    },
+    {
+      "id": "H142",
+      "category": "nosebleed",
+      "input": "She had a nosebleed after rubbing her nose. It stopped completely after 5 minutes of pinching.",
+      "child_age_months": 72,
+      "expected_level": 4,
+      "expected_concept": "nosebleed",
+      "rationale": "Brief, easily controlled nosebleed is benign and does not require urgent medical care."
+    },
+    {
+      "id": "H143",
+      "category": "feeding_advice",
+      "input": "Can I give my 7-month-old mashed avocado and banana?",
+      "child_age_months": 7,
+      "expected_level": 5,
+      "expected_concept": "feeding_advice",
+      "rationale": "Routine infant feeding advice is a non-medical educational query."
+    },
+    {
+      "id": "H144",
+      "category": "hiccups",
+      "input": "My newborn gets hiccups after feeding but breathes fine and feeds well.",
+      "child_age_months": 1,
+      "expected_level": 5,
+      "expected_concept": "hiccups",
+      "rationale": "Infant hiccups are completely benign and normal developmental occurrences."
+    },
+    {
+      "id": "H145",
+      "category": "teething",
+      "input": "My 8-month-old is drooling and chewing toys a lot, seems fine otherwise.",
+      "child_age_months": 8,
+      "expected_level": 5,
+      "expected_concept": "teething",
+      "rationale": "Teething is a normal developmental stage and not a medical symptom."
+    },
+    {
+      "id": "H146",
+      "category": "cradle_cap",
+      "input": "He has flaky yellow skin on his scalp. It does not seem to bother him.",
+      "child_age_months": 6,
+      "expected_level": 5,
+      "expected_concept": "cradle_cap",
+      "rationale": "Cradle cap (seborrheic dermatitis) is a benign self-limiting cosmetic issue."
+    },
+    {
+      "id": "H147",
+      "category": "sleep_pattern",
+      "input": "My 5-month-old has started waking every two hours. Is this normal?",
+      "child_age_months": 5,
+      "expected_level": 5,
+      "expected_concept": "sleep_pattern",
+      "rationale": "Changes in infant sleep patterns are developmental and non-medical queries."
+    },
+    {
+      "id": "H148",
+      "category": "toddler_diet",
+      "input": "My toddler refuses vegetables this week and only eats pasta, but is active and healthy.",
+      "child_age_months": 30,
+      "expected_level": 5,
+      "expected_concept": "toddler_diet",
+      "rationale": "Toddler food refusal without weight loss or systemic symptoms is behavioral, not medical."
+    },
+    {
+      "id": "H149",
+      "category": "spit_up",
+      "input": "My 3-month-old spits up a small amount after feeds but is gaining weight normally.",
+      "child_age_months": 3,
+      "expected_level": 5,
+      "expected_concept": "spit_up",
+      "rationale": "Normal infant reflux ('spitting up') with good weight gain is physiological and benign."
+    },
+    {
+      "id": "H150",
+      "category": "bowel_frequency",
+      "input": "My 2-year-old has not pooped since yesterday, but her belly is soft and she is active.",
+      "child_age_months": 24,
+      "expected_level": 5,
+      "expected_concept": "bowel_frequency",
+      "rationale": "One day without a bowel movement in an asymptomatic child is normal physiological variation."
+    }
+  ]
+}

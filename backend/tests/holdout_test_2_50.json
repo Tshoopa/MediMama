@@ -1,0 +1,454 @@
+{
+  "test_cases": [
+    {
+      "id": "H051",
+      "category": "battery_ingestion",
+      "input": "My toddler just swallowed a small round button battery from a remote control. He is crying but breathing fine right now.",
+      "child_age_months": 24,
+      "expected_level": 1,
+      "expected_concept": "ingestion",
+      "rationale": "Button battery ingestion is a time-critical surgical emergency due to tissue necrosis risk."
+    },
+    {
+      "id": "H052",
+      "category": "infant_sepsis",
+      "input": "My 3-week-old baby feels very hot, temperature is 38.6. He hasn't woken up for his last two feeds and feels completely floppy.",
+      "child_age_months": 0,
+      "expected_level": 1,
+      "expected_concept": "neonatal_fever",
+      "rationale": "Fever under 3 months + lethargy/floppiness = high risk of sepsis, L1 emergency."
+    },
+    {
+      "id": "H053",
+      "category": "anaphylaxis",
+      "input": "She got stung by a bee 10 minutes ago. Now her voice sounds really raspy, she is coughing, and says her throat feels tight.",
+      "child_age_months": 84,
+      "expected_level": 1,
+      "expected_concept": "anaphylaxis",
+      "rationale": "Allergen exposure (bee) + throat swelling/raspy voice = impending airway compromise."
+    },
+    {
+      "id": "H054",
+      "category": "strangulated_hernia",
+      "input": "My baby has been screaming in pain and throwing up green fluid. I noticed a hard, purple lump in his groin that wasn't there before.",
+      "child_age_months": 4,
+      "expected_level": 1,
+      "expected_concept": "surgical",
+      "rationale": "Hard purple lump in groin + vomiting = strangulated hernia, surgical emergency."
+    },
+    {
+      "id": "H055",
+      "category": "prolonged_seizure",
+      "input": "My daughter has epilepsy and is having a seizure. It's been going on for more than five minutes and she's still shaking uncontrollably.",
+      "child_age_months": 96,
+      "expected_level": 1,
+      "expected_concept": "seizure",
+      "rationale": "Seizure lasting > 5 minutes is Status Epilepticus, requires immediate intervention."
+    },
+    {
+      "id": "H056",
+      "category": "meningitis",
+      "input": "He woke up with a high fever, is vomiting constantly, and is very confused. He can't even recognize me right now.",
+      "child_age_months": 60,
+      "expected_level": 1,
+      "expected_concept": "meningitis",
+      "rationale": "Fever + vomiting + confusion/altered mental status = red flag for CNS infection."
+    },
+    {
+      "id": "H057",
+      "category": "poisoning",
+      "input": "I left the laundry room for one minute and found my son chewing on a laundry pod. He swallowed some of the liquid and is now coughing.",
+      "child_age_months": 18,
+      "expected_level": 1,
+      "expected_concept": "ingestion",
+      "rationale": "Chemical/detergent ingestion = high risk of airway burn and toxicity."
+    },
+    {
+      "id": "H058",
+      "category": "testicular_torsion",
+      "input": "My 14-year-old woke up screaming. He says his left testicle hurts worse than anything he's ever felt and he threw up from the pain.",
+      "child_age_months": 168,
+      "expected_level": 1,
+      "expected_concept": "testicular_torsion",
+      "rationale": "Sudden severe testicular pain with vomiting = testicular torsion until proven otherwise."
+    },
+    {
+      "id": "H059",
+      "category": "drowning",
+      "input": "She slipped under the bathwater. I pulled her out fast, but her lips looked blue for a minute and she gasped for air. She seems sleepy now.",
+      "child_age_months": 14,
+      "expected_level": 1,
+      "expected_concept": "submersion",
+      "rationale": "Submersion with transient cyanosis and altered consciousness = secondary drowning risk."
+    },
+    {
+      "id": "H060",
+      "category": "choking",
+      "input": "He was eating a grape and suddenly grabbed his neck. He is completely silent, wide-eyed, and turning blue around the mouth.",
+      "child_age_months": 36,
+      "expected_level": 1,
+      "expected_concept": "airway_obstruction",
+      "rationale": "Silent choking + cyanosis = complete airway obstruction."
+    },
+    {
+      "id": "H061",
+      "category": "head_injury",
+      "input": "She fell off the swing and hit her head on concrete. She cried instantly but now she's vomited three times in the last hour.",
+      "child_age_months": 48,
+      "expected_level": 2,
+      "expected_concept": "head_injury",
+      "rationale": "Head injury followed by recurrent vomiting = risk of elevated intracranial pressure."
+    },
+    {
+      "id": "H062",
+      "category": "severe_burn",
+      "input": "He touched the glass of the hot oven door. The whole palm of his hand is red and forming large blisters.",
+      "child_age_months": 22,
+      "expected_level": 2,
+      "expected_concept": "burn",
+      "rationale": "Blistering burn on a sensitive area (hand) = urgent burn assessment."
+    },
+    {
+      "id": "H063",
+      "category": "appendicitis",
+      "input": "She started with tummy ache yesterday, but today the pain moved to the lower right side. She cries when she walks and has a mild fever.",
+      "child_age_months": 120,
+      "expected_level": 2,
+      "expected_concept": "abdominal_pain",
+      "rationale": "Migrating pain to RLQ + pain on walking = classic appendicitis presentation."
+    },
+    {
+      "id": "H064",
+      "category": "severe_dehydration",
+      "input": "My baby had diarrhea all night. Today her eyes look very sunken, she has no tears when crying, and her diaper has been dry for 8 hours.",
+      "child_age_months": 9,
+      "expected_level": 2,
+      "expected_concept": "dehydration",
+      "rationale": "Sunken eyes + no tears + no wet diaper = severe dehydration."
+    },
+    {
+      "id": "H065",
+      "category": "animal_bite",
+      "input": "A stray cat bit his hand while he was playing outside. There are deep puncture wounds and it's bleeding a bit.",
+      "child_age_months": 84,
+      "expected_level": 2,
+      "expected_concept": "wound",
+      "rationale": "Significant animal bite (puncture) requires antibiotics and rabies risk assessment."
+    },
+    {
+      "id": "H066",
+      "category": "pyelonephritis",
+      "input": "She has a fever of 39.0 and is complaining of severe pain in her lower back on the right side. It hurts when she passes urine too.",
+      "child_age_months": 108,
+      "expected_level": 2,
+      "expected_concept": "uti",
+      "rationale": "Fever + flank pain + dysuria = likely pyelonephritis."
+    },
+    {
+      "id": "H067",
+      "category": "respiratory_distress",
+      "input": "He has a bad cough, and I can see his skin pulling in deeply under his ribs every time he takes a breath.",
+      "child_age_months": 24,
+      "expected_level": 2,
+      "expected_concept": "respiratory",
+      "rationale": "Chest retractions (pulling in under ribs) = significant respiratory distress."
+    },
+    {
+      "id": "H068",
+      "category": "infant_fever",
+      "input": "My 5-month-old daughter has a temperature of 39.2. She is fussy but taking her bottle.",
+      "child_age_months": 5,
+      "expected_level": 2,
+      "expected_concept": "fever",
+      "rationale": "Fever >= 39.0 in an infant <= 6 months is an urgent L2 presentation."
+    },
+    {
+      "id": "H069",
+      "category": "neonatal_jaundice",
+      "input": "He is 4 days old and looks very yellow all over his chest and tummy. He's also been hard to wake for feeds today.",
+      "child_age_months": 0,
+      "expected_level": 2,
+      "expected_concept": "neonatal_jaundice",
+      "rationale": "Jaundice extending to abdomen + lethargy in a neonate = urgent evaluation."
+    },
+    {
+      "id": "H070",
+      "category": "nosebleed",
+      "input": "His nose started bleeding randomly. I've been pinching it tight for 25 minutes but it's still gushing blood.",
+      "child_age_months": 72,
+      "expected_level": 2,
+      "expected_concept": "nosebleed",
+      "rationale": "Nosebleed persisting > 20 minutes despite pressure = uncontrolled epistaxis."
+    },
+    {
+      "id": "H071",
+      "category": "septic_arthritis",
+      "input": "My toddler woke up limping and now refuses to walk at all. His right knee is red, hot, and swollen.",
+      "child_age_months": 30,
+      "expected_level": 2,
+      "expected_concept": "musculoskeletal",
+      "rationale": "Refusal to bear weight + hot swollen joint = possible septic arthritis."
+    },
+    {
+      "id": "H072",
+      "category": "sore_throat_airway",
+      "input": "He has a terrible sore throat and can't swallow his own saliva, so he is drooling everywhere. No cough though.",
+      "child_age_months": 60,
+      "expected_level": 2,
+      "expected_concept": "sore_throat",
+      "rationale": "Sore throat + drooling/inability to swallow = risk of epiglottitis or peritonsillar abscess."
+    },
+    {
+      "id": "H073",
+      "category": "gross_hematuria",
+      "input": "When my son went to the toilet, his urine was bright red and he said he saw small red clots in it. He has no fever.",
+      "child_age_months": 96,
+      "expected_level": 2,
+      "expected_concept": "urinary",
+      "rationale": "Gross hematuria with clots requires urgent urological/medical review."
+    },
+    {
+      "id": "H074",
+      "category": "mental_health",
+      "input": "My 15-year-old just told me she took a handful of random pills from the cabinet because she doesn't want to live anymore.",
+      "child_age_months": 180,
+      "expected_level": 2,
+      "expected_concept": "mental_health",
+      "rationale": "Suicidal ideation with active ingestion requires immediate medical and psych evaluation. (L1/L2 based on symptoms, L2 safely catches ideation/ingestion via rules)."
+    },
+    {
+      "id": "H075",
+      "category": "measles",
+      "input": "She has had a fever and red watery eyes for days. Today a flat red rash started behind her ears and is spreading to her neck.",
+      "child_age_months": 42,
+      "expected_level": 2,
+      "expected_concept": "rash",
+      "rationale": "Fever + coryza/conjunctivitis + descending cephalocaudal rash = suspected measles."
+    },
+    {
+      "id": "H076",
+      "category": "inconsolable_crying",
+      "input": "My 2-month-old has been crying nonstop for 4 hours. Nothing I do calms him down. He has no fever and is breathing fine.",
+      "child_age_months": 2,
+      "expected_level": 3,
+      "expected_concept": "infant_distress",
+      "rationale": "Prolonged inconsolable crying in a young infant warrants timely assessment."
+    },
+    {
+      "id": "H077",
+      "category": "high_fever",
+      "input": "He has a fever of 40.2 degrees. He's sluggish but will wake up when I talk to him and he drank some juice.",
+      "child_age_months": 48,
+      "expected_level": 3,
+      "expected_concept": "fever",
+      "rationale": "Temperature >= 40.0C without other critical L1/L2 red flags triggers an L3 review."
+    },
+    {
+      "id": "H078",
+      "category": "infant_fever_moderate",
+      "input": "My 9-month-old has a temperature of 39.4. She is a bit grumpy but still playing with her toys and eating.",
+      "child_age_months": 9,
+      "expected_level": 3,
+      "expected_concept": "fever",
+      "rationale": "Fever >= 39.0C in an infant between 6-12 months is prioritized as L3."
+    },
+    {
+      "id": "H079",
+      "category": "coin_ingestion",
+      "input": "I saw him swallow a small shiny coin. He didn't choke and is breathing perfectly fine, just playing as normal.",
+      "child_age_months": 36,
+      "expected_level": 3,
+      "expected_concept": "ingestion",
+      "rationale": "Asymptomatic non-sharp object ingestion requires imaging to confirm position (L3 priority)."
+    },
+    {
+      "id": "H080",
+      "category": "umbilical_discharge",
+      "input": "The umbilical stump on my 10-day-old fell off, but now the belly button has some yellow pus and smells bad.",
+      "child_age_months": 0,
+      "expected_level": 2,
+      "expected_concept": "neonatal",
+      "rationale": "Neonatal umbilical infection (omphalitis) is L2. (Wait, let's keep it as L2 per rules, it's a good test!)."
+    },
+    {
+      "id": "H081",
+      "category": "mild_burn",
+      "input": "She touched a hot cup of tea. There is a small red mark on her finger, no blisters, and she stopped crying after 5 minutes.",
+      "child_age_months": 30,
+      "expected_level": 4,
+      "expected_concept": "burn",
+      "rationale": "Mild superficial burn, child calm = L4 home care/GP review."
+    },
+    {
+      "id": "H082",
+      "category": "minor_head_injury",
+      "input": "He tripped and bumped his head on the carpet. He cried but is playing normally now. No vomiting, totally alert.",
+      "child_age_months": 24,
+      "expected_level": 4,
+      "expected_concept": "head_injury",
+      "rationale": "Minor mechanism fall, asymptomatic = L4 advice."
+    },
+    {
+      "id": "H083",
+      "category": "foreign_body_nose_mild",
+      "input": "He put a small soft piece of tissue up his nose. I can see it, he is breathing fine and is completely calm.",
+      "child_age_months": 48,
+      "expected_level": 4,
+      "expected_concept": "foreign_body",
+      "rationale": "Visible nasal foreign body with a calm child = L4 clinic removal."
+    },
+    {
+      "id": "H084",
+      "category": "minor_wound",
+      "input": "She got a small cut from a piece of paper on her finger. It bled a tiny bit but stopped with a band-aid.",
+      "child_age_months": 60,
+      "expected_level": 4,
+      "expected_concept": "wound",
+      "rationale": "Minor superficial wound = L4."
+    },
+    {
+      "id": "H085",
+      "category": "isolated_hives",
+      "input": "He has a small patch of hives on his tummy after trying a new lotion. He is breathing perfectly and happily playing.",
+      "child_age_months": 18,
+      "expected_level": 4,
+      "expected_concept": "allergy",
+      "rationale": "Isolated mild hives without respiratory/systemic symptoms = L4."
+    },
+    {
+      "id": "H086",
+      "category": "mild_jaundice",
+      "input": "My 2-week-old still has a slightly yellow face, but his tummy and legs are normal color. He feeds perfectly every 3 hours.",
+      "child_age_months": 0,
+      "expected_level": 4,
+      "expected_concept": "neonatal_jaundice",
+      "rationale": "Mild resolving jaundice with good feeding = L4."
+    },
+    {
+      "id": "H087",
+      "category": "mild_animal_scratch",
+      "input": "Our puppy gave him a tiny scratch on the arm. It barely broke the skin and stopped bleeding instantly.",
+      "child_age_months": 54,
+      "expected_level": 4,
+      "expected_concept": "wound",
+      "rationale": "Minor animal scratch = L4 for cleaning and vaccine check."
+    },
+    {
+      "id": "H088",
+      "category": "ear_pain",
+      "input": "She has had a cold, and tonight she woke up crying and pulling at her right ear. Her temp is 38.0.",
+      "child_age_months": 28,
+      "expected_level": 4,
+      "expected_concept": "ear_infection",
+      "rationale": "Likely acute otitis media following a cold. Needs GP review but not an emergency."
+    },
+    {
+      "id": "H089",
+      "category": "mild_gastro",
+      "input": "He threw up once this morning and had one loose stool, but he's drinking water and playing happily now.",
+      "child_age_months": 36,
+      "expected_level": 4,
+      "expected_concept": "gastroenteritis",
+      "rationale": "Mild gastroenteritis with good hydration and normal behavior = L4."
+    },
+    {
+      "id": "H090",
+      "category": "conjunctivitis",
+      "input": "Her left eye is a bit red and had some sticky yellow crust this morning. No fever, and it doesn't bother her vision.",
+      "child_age_months": 48,
+      "expected_level": 4,
+      "expected_concept": "eye_infection",
+      "rationale": "Suspected bacterial conjunctivitis without systemic symptoms = L4 clinic review."
+    },
+    {
+      "id": "H091",
+      "category": "happy_spitter",
+      "input": "My 3-month-old spits up a little bit of milk after almost every feed, but he is gaining weight fine, smiling, and has no fever.",
+      "child_age_months": 3,
+      "expected_level": 5,
+      "expected_concept": "reflux",
+      "rationale": "Physiological reflux ('happy spitter') with normal weight gain = L5 routine advice."
+    },
+    {
+      "id": "H092",
+      "category": "normal_newborn",
+      "input": "She is 2 weeks old and sneezes or gets hiccups a few times a day. She is feeding well and has no fever.",
+      "child_age_months": 0,
+      "expected_level": 5,
+      "expected_concept": "normal_development",
+      "rationale": "Sneezing and hiccups are normal newborn reflexes = L5."
+    },
+    {
+      "id": "H093",
+      "category": "mild_constipation",
+      "input": "My toddler hasn't pooped in 2 days. He is eating perfectly fine, running around, and his tummy feels soft. Not complaining of pain.",
+      "child_age_months": 24,
+      "expected_level": 5,
+      "expected_concept": "constipation",
+      "rationale": "Mild asymptomatic constipation = L5 home management."
+    },
+    {
+      "id": "H094",
+      "category": "cradle_cap",
+      "input": "He has some yellowish crusty flakes on his scalp. It doesn't seem to itch or bother him at all.",
+      "child_age_months": 2,
+      "expected_level": 5,
+      "expected_concept": "skin_condition",
+      "rationale": "Typical seborrheic dermatitis (cradle cap) = L5 routine care."
+    },
+    {
+      "id": "H095",
+      "category": "baby_acne",
+      "input": "My newborn has tiny red bumps with white centers on his cheeks. No fever, feeding and sleeping normally.",
+      "child_age_months": 1,
+      "expected_level": 5,
+      "expected_concept": "skin_condition",
+      "rationale": "Erythema toxicum or neonatal acne, completely benign = L5."
+    },
+    {
+      "id": "H096",
+      "category": "diet_advice",
+      "input": "I just want to know what foods I should avoid giving my 8-month-old now that he is trying solid foods.",
+      "child_age_months": 8,
+      "expected_level": 5,
+      "expected_concept": "dietary_advice",
+      "rationale": "Routine dietary/weaning question = L5 non-medical."
+    },
+    {
+      "id": "H097",
+      "category": "sleep_regression",
+      "input": "She is 4 months old and suddenly started waking up every 2 hours at night. She has no signs of being sick, just wants to be held.",
+      "child_age_months": 4,
+      "expected_level": 5,
+      "expected_concept": "sleep_issue",
+      "rationale": "Classic 4-month sleep regression, no medical red flags = L5."
+    },
+    {
+      "id": "H098",
+      "category": "diaper_rash",
+      "input": "He has a mild red rash in his diaper area today. The skin is not broken, no bleeding, and he has no fever.",
+      "child_age_months": 15,
+      "expected_level": 5,
+      "expected_concept": "rash",
+      "rationale": "Uncomplicated diaper dermatitis = L5 home care."
+    },
+    {
+      "id": "H099",
+      "category": "picky_eating",
+      "input": "My 2-year-old only wants to eat pasta and bread. He refuses vegetables but is extremely active and looks healthy.",
+      "child_age_months": 24,
+      "expected_level": 5,
+      "expected_concept": "behavioral",
+      "rationale": "Toddler picky eating without weight loss or fatigue = L5 routine."
+    },
+    {
+      "id": "H100",
+      "category": "sleep_advice",
+      "input": "What is the best way to help my 6-month-old sleep through the night? He is perfectly healthy otherwise.",
+      "child_age_months": 6,
+      "expected_level": 5,
+      "expected_concept": "sleep_issue",
+      "rationale": "General sleep advice question = L5 non-medical."
+    }
+  ]
+}

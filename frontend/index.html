@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<!-- MediMama — pediatric triage AI demo frontend -->
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediMama - Pediatric Triage AI</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>MediMama 🍼</h1>
+            <p>AI-Powered Pediatric Triage &amp; Information</p>
+        </header>
+
+        <main>
+            <form id="askForm">
+                <div class="form-group">
+                    <label for="language">Language / زبان / اللغة:</label>
+                    <select id="language" name="language" required>
+                        <option value="en">English</option>
+                        <option value="fa">فارسی</option>
+                        <option value="ar">العربية</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="age">Child's Age (in months):</label>
+                    <input type="number" id="age" name="age" min="0" max="216"
+                           placeholder="e.g., 24 (for 2 years old)" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="symptoms">Symptoms / Question:</label>
+                    <textarea id="symptoms" name="symptoms" rows="4"
+                              placeholder="Describe the symptoms here..." required></textarea>
+                </div>
+
+                <button type="submit" id="submitBtn">Ask MediMama</button>
+            </form>
+
+            <div id="loading" class="hidden" role="status">Processing your request...</div>
+
+            <div id="error" class="hidden" role="alert"></div>
+
+            <div id="results" class="hidden">
+                <div id="urgencyBox" class="urgency-box"></div>
+                <p id="urgencyAdvice"></p>
+                <h3>Answer:</h3>
+                <p id="answerText"></p>
+
+                <div id="citationsBlock" class="hidden">
+                    <h4>Citations:</h4>
+                    <ul id="citationsList"></ul>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

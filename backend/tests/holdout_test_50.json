@@ -1,0 +1,454 @@
+{
+  "test_cases": [
+    {
+      "id": "H001",
+      "category": "airway_obstruction",
+      "input": "My 4-month-old was feeding and suddenly stopped breathing. Her lips are turning blue and she isn't making any sound.",
+      "child_age_months": 4,
+      "expected_level": 1,
+      "expected_concept": "airway_obstruction",
+      "rationale": "Complete airway obstruction with cyanosis in infant = immediate resuscitation"
+    },
+    {
+      "id": "H002",
+      "category": "anaphylaxis",
+      "input": "He ate a peanut snack and now his face and lips are swelling up and he's struggling to breathe.",
+      "child_age_months": 24,
+      "expected_level": 1,
+      "expected_concept": "anaphylaxis",
+      "rationale": "Facial swelling + respiratory distress after allergen = anaphylaxis"
+    },
+    {
+      "id": "H003",
+      "category": "severe_dehydration",
+      "input": "She's had vomiting and diarrhea since yesterday, no wet nappy in over 12 hours, and she's floppy and too sleepy to cry.",
+      "child_age_months": 18,
+      "expected_level": 2,
+      "expected_concept": "dehydration",
+      "rationale": "No urine 12h + lethargy + floppy = severe dehydration"
+    },
+    {
+      "id": "H004",
+      "category": "meningitis",
+      "input": "He has a high fever, keeps saying his neck hurts and won't bend it, and I see small purple spots on his legs that don't fade when I press them.",
+      "child_age_months": 30,
+      "expected_level": 1,
+      "expected_concept": "meningitis",
+      "rationale": "Fever + neck stiffness + non-blanching rash = meningococcal disease"
+    },
+    {
+      "id": "H005",
+      "category": "febrile_seizure",
+      "input": "My son had a fever and suddenly his whole body started shaking for about a minute. It stopped on its own and now he's tired but looking at me and responding.",
+      "child_age_months": 20,
+      "expected_level": 2,
+      "expected_concept": "seizure",
+      "rationale": "Post-ictal but alert febrile seizure = urgent assessment"
+    },
+    {
+      "id": "H006",
+      "category": "burn",
+      "input": "He pulled a pot of boiling water on himself. There's a large blistering area on his arm and chest.",
+      "child_age_months": 36,
+      "expected_level": 2,
+      "expected_concept": "burn",
+      "rationale": "Large blistering scald burn = emergency"
+    },
+    {
+      "id": "H007",
+      "category": "head_injury",
+      "input": "She fell off her bike and hit her head. She was knocked out for a few seconds but now she's talking and knows who I am, just has a headache.",
+      "child_age_months": 60,
+      "expected_level": 2,
+      "expected_concept": "head_injury",
+      "rationale": "Head injury with brief LOC = needs emergency evaluation"
+    },
+    {
+      "id": "H008",
+      "category": "poisoning",
+      "input": "I found my son with an open bottle of my sleeping pills and some are missing. He seems drowsier than usual.",
+      "child_age_months": 28,
+      "expected_level": 1,
+      "expected_concept": "ingestion",
+      "rationale": "Unknown medication ingestion + altered consciousness = emergency"
+    },
+    {
+      "id": "H009",
+      "category": "diabetic_emergency",
+      "input": "She's diabetic and today she's been vomiting, breathing really fast, and her breath smells fruity.",
+      "child_age_months": 132,
+      "expected_level": 1,
+      "expected_concept": "dka",
+      "rationale": "Kussmaul breathing + fruity breath + vomiting in diabetic = DKA"
+    },
+    {
+      "id": "H010",
+      "category": "respiratory_distress",
+      "input": "His asthma is bad, he can barely say two words without stopping to breathe, and his lips look a bit blue.",
+      "child_age_months": 84,
+      "expected_level": 1,
+      "expected_concept": "respiratory_distress",
+      "rationale": "Severe asthma with cyanosis and inability to speak = life-threatening"
+    },
+    {
+      "id": "H011",
+      "category": "croup",
+      "input": "She has a barky cough and when she breathes in I can hear a loud noise even when she's just sitting still.",
+      "child_age_months": 22,
+      "expected_level": 2,
+      "expected_concept": "stridor",
+      "rationale": "Stridor at rest = significant airway narrowing"
+    },
+    {
+      "id": "H012",
+      "category": "mild_respiratory",
+      "input": "Baby has a runny nose and a bit of a cough for two days, still feeding fine and no fever, just sounds congested.",
+      "child_age_months": 7,
+      "expected_level": 4,
+      "expected_concept": null,
+      "rationale": "Mild URTI, feeding well, no distress"
+    },
+    {
+      "id": "H013",
+      "category": "neonatal_fever",
+      "input": "My 2-month-old has a temperature of 38.2, otherwise seems okay, feeding a bit less than usual.",
+      "child_age_months": 2,
+      "expected_level": 1,
+      "expected_concept": "neonatal_fever",
+      "rationale": "Any fever under 3 months = sepsis workup, emergency"
+    },
+    {
+      "id": "H014",
+      "category": "mild_gastro",
+      "input": "He's thrown up twice today and had loose stools once, but he's still playing and drank some water fine.",
+      "child_age_months": 16,
+      "expected_level": 4,
+      "expected_concept": null,
+      "rationale": "Mild gastro, well hydrated, active"
+    },
+    {
+      "id": "H015",
+      "category": "common_cold",
+      "input": "Just a runny nose and mild cough for a day, no fever, she's eating and playing normally.",
+      "child_age_months": 48,
+      "expected_level": 5,
+      "expected_concept": null,
+      "rationale": "Common cold, self-care"
+    },
+    {
+      "id": "H016",
+      "category": "teething",
+      "input": "He's been drooling a lot and chewing on everything, a bit fussy but no fever.",
+      "child_age_months": 9,
+      "expected_level": 5,
+      "expected_concept": null,
+      "rationale": "Normal teething"
+    },
+    {
+      "id": "H017",
+      "category": "mild_rash",
+      "input": "I noticed a small patch of rash on her arm today, no fever, she doesn't seem bothered by it.",
+      "child_age_months": 40,
+      "expected_level": 5,
+      "expected_concept": null,
+      "rationale": "Localized asymptomatic rash"
+    },
+    {
+      "id": "H018",
+      "category": "constipation",
+      "input": "He hasn't pooped in 3 days but is eating fine and not in pain, just a bit uncomfortable.",
+      "child_age_months": 30,
+      "expected_level": 5,
+      "expected_concept": null,
+      "rationale": "Mild constipation, no red flags"
+    },
+    {
+      "id": "H019",
+      "category": "minor_injury",
+      "input": "She scraped her knee on the pavement, small graze with a bit of blood but she's already back to playing.",
+      "child_age_months": 54,
+      "expected_level": 5,
+      "expected_concept": null,
+      "rationale": "Minor abrasion"
+    },
+    {
+      "id": "H020",
+      "category": "insect_bite",
+      "input": "A mosquito bit him on the arm, it's a bit red and slightly swollen but he's not bothered.",
+      "child_age_months": 36,
+      "expected_level": 5,
+      "expected_concept": null,
+      "rationale": "Localized insect bite, no systemic reaction"
+    },
+    {
+      "id": "H021",
+      "category": "ear_infection",
+      "input": "She's been pulling at her ear and has a fever of 38.5, but is still eating and playing okay.",
+      "child_age_months": 26,
+      "expected_level": 4,
+      "expected_concept": null,
+      "rationale": "Likely otitis media, otherwise well"
+    },
+    {
+      "id": "H022",
+      "category": "mild_sore_throat",
+      "input": "He says his throat hurts a bit, no trouble swallowing, still eating and drinking normally.",
+      "child_age_months": 96,
+      "expected_level": 4,
+      "expected_concept": null,
+      "rationale": "Mild pharyngitis, no distress"
+    },
+    {
+      "id": "H023",
+      "category": "conjunctivitis",
+      "input": "Her eye is a bit pink with some discharge this morning, no fever, doesn't bother her vision.",
+      "child_age_months": 44,
+      "expected_level": 5,
+      "expected_concept": null,
+      "rationale": "Likely conjunctivitis"
+    },
+    {
+      "id": "H024",
+      "category": "mild_vomiting",
+      "input": "He's vomited a few times today but has kept down some water and still has energy to play a little.",
+      "child_age_months": 14,
+      "expected_level": 4,
+      "expected_concept": null,
+      "rationale": "Mild vomiting, no dehydration"
+    },
+    {
+      "id": "H025",
+      "category": "persistent_diarrhea",
+      "input": "She's had loose stools for 5 days, no blood, still drinking and peeing normally, just tired of it.",
+      "child_age_months": 30,
+      "expected_level": 4,
+      "expected_concept": null,
+      "rationale": "Persistent but hydrated diarrhea, needs review"
+    },
+    {
+      "id": "H026",
+      "category": "appendicitis",
+      "input": "He's had pain on his lower right belly for a few hours, getting worse, and now has a bit of a fever.",
+      "child_age_months": 108,
+      "expected_level": 2,
+      "expected_concept": "abdominal_pain",
+      "rationale": "RLQ pain + fever = possible appendicitis"
+    },
+    {
+      "id": "H027",
+      "category": "testicular_torsion",
+      "input": "My son suddenly has severe pain in one testicle, it came on very fast about an hour ago, he's in a lot of distress.",
+      "child_age_months": 156,
+      "expected_level": 1,
+      "expected_concept": "testicular_torsion",
+      "rationale": "Acute severe testicular pain = torsion, time-critical surgical emergency"
+    },
+    {
+      "id": "H028",
+      "category": "self_harm",
+      "input": "My teenager told me she doesn't want to be alive anymore and I found cuts on her arm from a razor.",
+      "child_age_months": 168,
+      "expected_level": 2,
+      "expected_concept": "mental_health_crisis",
+      "rationale": "Suicidal ideation + self-harm = urgent mental health emergency"
+    },
+    {
+      "id": "H029",
+      "category": "mild_allergy",
+      "input": "He has hives all over his body after eating strawberries, but he's breathing fine and acting normal.",
+      "child_age_months": 32,
+      "expected_level": 4,
+      "expected_concept": null,
+      "rationale": "Urticaria without systemic/respiratory involvement"
+    },
+    {
+      "id": "H030",
+      "category": "fall_from_height",
+      "input": "She fell off the playground slide, about 2 meters, cried right away, moving all limbs fine, no loss of consciousness.",
+      "child_age_months": 60,
+      "expected_level": 3,
+      "expected_concept": null,
+      "rationale": "Fall from height but currently no red flags, needs observation"
+    },
+    {
+      "id": "H031",
+      "category": "animal_bite",
+      "input": "Our dog bit him on the leg, there's a puncture wound bleeding a bit but I've stopped it with pressure.",
+      "child_age_months": 48,
+      "expected_level": 3,
+      "expected_concept": null,
+      "rationale": "Animal bite, controlled bleeding, needs wound care/antibiotics"
+    },
+    {
+      "id": "H032",
+      "category": "nosebleed",
+      "input": "She's had a few nosebleeds this week, each stops after a few minutes of pressure, otherwise fine.",
+      "child_age_months": 66,
+      "expected_level": 5,
+      "expected_concept": null,
+      "rationale": "Recurrent self-resolving epistaxis"
+    },
+    {
+      "id": "H033",
+      "category": "foreign_body_nose",
+      "input": "He put a small bead up his nose, I can see it but can't get it out, he's breathing fine and not in pain.",
+      "child_age_months": 40,
+      "expected_level": 4,
+      "expected_concept": null,
+      "rationale": "Visible nasal foreign body, no airway compromise"
+    },
+    {
+      "id": "H034",
+      "category": "inconsolable_crying",
+      "input": "My baby has been crying non-stop for 3 hours, nothing calms her, this isn't normal for her.",
+      "child_age_months": 3,
+      "expected_level": 3,
+      "expected_concept": null,
+      "rationale": "Prolonged inconsolable crying in infant needs assessment"
+    },
+    {
+      "id": "H035",
+      "category": "neonatal_jaundice",
+      "input": "My newborn's skin looks a bit yellow, especially her face, but she's feeding well and having wet diapers.",
+      "child_age_months": 1,
+      "expected_level": 4,
+      "expected_concept": null,
+      "rationale": "Mild jaundice, feeding well, needs review not emergency"
+    },
+    {
+      "id": "H036",
+      "category": "umbilical_infection",
+      "input": "The area around my baby's belly button looks red with some discharge, no fever though.",
+      "child_age_months": 1,
+      "expected_level": 3,
+      "expected_concept": null,
+      "rationale": "Possible omphalitis, infection risk in neonate"
+    },
+    {
+      "id": "H037",
+      "category": "vaccine_reaction",
+      "input": "He got his vaccine yesterday and has a mild fever and a sore arm, otherwise acting normal.",
+      "child_age_months": 12,
+      "expected_level": 5,
+      "expected_concept": null,
+      "rationale": "Expected post-vaccination reaction"
+    },
+    {
+      "id": "H038",
+      "category": "growing_pains",
+      "input": "She wakes at night saying her legs hurt, but during the day she runs around fine, no swelling or fever.",
+      "child_age_months": 72,
+      "expected_level": 5,
+      "expected_concept": null,
+      "rationale": "Typical growing pains"
+    },
+    {
+      "id": "H039",
+      "category": "sleep_disturbance",
+      "input": "He's been waking a lot at night this past week, no other symptoms, seems like a sleep phase.",
+      "child_age_months": 30,
+      "expected_level": 5,
+      "expected_concept": null,
+      "rationale": "Behavioral, no medical red flags"
+    },
+    {
+      "id": "H040",
+      "category": "picky_eating",
+      "input": "She's a really picky eater lately, only wants a few foods, but she's growing fine and has energy.",
+      "child_age_months": 44,
+      "expected_level": 5,
+      "expected_concept": null,
+      "rationale": "Normal toddler picky eating"
+    },
+    {
+      "id": "H041",
+      "category": "low_grade_fever",
+      "input": "Baby feels a little warm, about 37.8, drooling a lot too, still smiling and playing.",
+      "child_age_months": 11,
+      "expected_level": 5,
+      "expected_concept": null,
+      "rationale": "Low-grade temp, likely teething, well child"
+    },
+    {
+      "id": "H042",
+      "category": "hand_foot_mouth",
+      "input": "He has small blisters in his mouth and on his hands and feet, mild fever, still drinking fluids okay.",
+      "child_age_months": 36,
+      "expected_level": 4,
+      "expected_concept": null,
+      "rationale": "Hand-foot-mouth disease, hydrated"
+    },
+    {
+      "id": "H043",
+      "category": "chickenpox",
+      "input": "She has itchy spots all over her body that look like chickenpox, mild fever, otherwise mostly normal.",
+      "child_age_months": 60,
+      "expected_level": 4,
+      "expected_concept": null,
+      "rationale": "Typical varicella, uncomplicated"
+    },
+    {
+      "id": "H044",
+      "category": "measles",
+      "input": "He has a high fever, red watery eyes, a bad cough, and now a rash starting on his face and spreading down.",
+      "child_age_months": 30,
+      "expected_level": 2,
+      "expected_concept": "measles",
+      "rationale": "High fever + coryza + descending rash = possible measles, needs urgent review"
+    },
+    {
+      "id": "H045",
+      "category": "meningitis",
+      "input": "She has the worst headache she's ever had, says the light hurts her eyes, and her neck feels stiff.",
+      "child_age_months": 84,
+      "expected_level": 1,
+      "expected_concept": "meningitis",
+      "rationale": "Severe headache + photophobia + neck stiffness = meningitis"
+    },
+    {
+      "id": "H046",
+      "category": "septic_arthritis",
+      "input": "He suddenly won't put any weight on his leg, it's warm to touch, and he has a fever too.",
+      "child_age_months": 48,
+      "expected_level": 2,
+      "expected_concept": "joint_infection",
+      "rationale": "Refusal to bear weight + warm joint + fever = possible septic arthritis"
+    },
+    {
+      "id": "H047",
+      "category": "coin_ingestion",
+      "input": "She swallowed a small coin about an hour ago, breathing normally, talking, not in any distress.",
+      "child_age_months": 40,
+      "expected_level": 3,
+      "expected_concept": null,
+      "rationale": "Asymptomatic coin ingestion, needs review/imaging"
+    },
+    {
+      "id": "H048",
+      "category": "minor_burn",
+      "input": "He spilled some hot tea on his hand, there's a small red mark, no blistering, he cried but calmed quickly.",
+      "child_age_months": 20,
+      "expected_level": 4,
+      "expected_concept": null,
+      "rationale": "Minor superficial burn, no blistering"
+    },
+    {
+      "id": "H049",
+      "category": "bee_sting",
+      "input": "A bee stung her arm, there's swelling at the sting site, but she's breathing fine and acting normal.",
+      "child_age_months": 54,
+      "expected_level": 5,
+      "expected_concept": null,
+      "rationale": "Localized sting reaction, no systemic symptoms"
+    },
+    {
+      "id": "H050",
+      "category": "infant_uti",
+      "input": "My baby has had a temperature of 39.5 since this morning and cries a lot when I change her nappy like it hurts to pee.",
+      "child_age_months": 6,
+      "expected_level": 2,
+      "expected_concept": "uti",
+      "rationale": "High fever + dysuria signs in young infant = possible UTI/sepsis risk"
+    }
+  ]
+}
