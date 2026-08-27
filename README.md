@@ -15,7 +15,7 @@ A multilingual clinical decision-support prototype built around one principle:
 
 ## Demo
 
-[![MediMama demo]](https://youtu.be/NrxGldhbJUc?is=lV1WHg7dlq1yz4Y5)
+[[MediMama demo video]](https://youtu.be/NrxGldhbJUc?is=lV1WHg7dlq1yz4Y5)
 
 ---
 
