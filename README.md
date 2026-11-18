@@ -96,16 +96,19 @@ No local generative model, embedding model, or cross-encoder is loaded. OpenAI e
 
 ## How it works
 
+```mermaid
 flowchart TD
-    A[Parent question] --> B[Safety & scope gate]
-    B --> C[Deterministic clinical feature extraction]
-    C --> D[Deterministic triage rules]
-    D --> E{L1/L2?}
-    E -->|Yes| F[Deterministic emergency response]
-    E -->|No — L3–L5| G[Hybrid retrieval: dense + sparse + RRF]
-    G --> H["LLM answer generation (local Qwen3 or OpenAI)"]
-    H --> I[Grounding verification]
-    I --> J[Translated answer + citations]
+A["Parent question"] --> B["Safety & scope gate"]
+B --> C["Deterministic clinical feature extraction"]
+C --> D["Deterministic triage rules"]
+D --> E{"Triage level?"}
+
+E -->|L1/L2| F["Deterministic emergency response"]
+E -->|L3–L5| G["Hybrid retrieval: dense + sparse + RRF"]
+
+G --> H["LLM answer generation (local Qwen3 or OpenAI)"]
+H --> I["Grounding verification"]
+I --> J["Translated answer + citations"]
 
 
 **Safety invariant:** the LLM safety net may escalate a deterministic triage level, but it cannot downgrade it.
