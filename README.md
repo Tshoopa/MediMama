@@ -109,7 +109,7 @@ E -->|L3–L5| G["Hybrid retrieval: dense + sparse + RRF"]
 G --> H["LLM answer generation (local Qwen3 or OpenAI)"]
 H --> I["Grounding verification"]
 I --> J["Translated answer + citations"]
-
+```
 
 **Safety invariant:** the LLM safety net may escalate a deterministic triage level, but it cannot downgrade it.
 
