@@ -36,6 +36,34 @@
   },
 
   "negation_overrides": {
+      "has_rash": [
+    "\\bno rash\\b",
+    "\\bno skin rash\\b",
+    "\\bwithout a rash\\b",
+    "\\bnot a rash\\b",
+    "\\bno spots\\b",
+    "\\bno red spots\\b",
+    "\\bskin looks normal\\b",
+    "\\bskin is clear\\b"
+  ],
+  "spreading_rash": [
+    "\\brash (is )?not spreading\\b",
+    "\\bnot spreading\\b",
+    "\\bno spreading rash\\b",
+    "\\brash hasn't spread\\b",
+    "\\brash has not spread\\b"
+  ],
+  "rash_starting_on_face": [
+    "\\bno rash on (his|her|the) face\\b",
+    "\\bface is clear\\b",
+    "\\bno facial rash\\b"
+  ],
+  "measles_like_rash": [
+    "\\bno rash\\b",
+    "\\bnot measles\\b",
+    "\\bno spots\\b"
+  ],
+
     "has_fever": [
       "\\bno fever\\b",
       "\\bwithout fever\\b",

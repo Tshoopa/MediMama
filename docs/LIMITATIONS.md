@@ -29,17 +29,22 @@ This document is deliberately specific. A prototype that lists no limitations ha
 
 ## Technical Limitations
 
+**Two runtime modes have different retrieval behavior.** Local mode uses PubMedBERT embeddings and a cross-encoder; API mode uses OpenAI embeddings and RRF without a local reranker. The vector collections are therefore separate and must be ingested independently. API mode also skips local semantic concept and semantic feature models, leaving deterministic features/rules as the triage basis unless optional OpenAI assists are explicitly enabled.
+
+**Local mode can run without an OpenAI API key.** MedGemma handles both answer generation and translation by default, and local encoders handle RAG/semantic helpers. Initial model downloads still require Hugging Face access, and any configured cloud Qdrant instance or explicitly enabled OpenAI triage assist remains an external dependency.
+
+
 **Retrieval quality is not yet measured.** Triage correctness is evaluated; retrieval relevance, context relevance, and citation quality are not. A case can be triaged correctly and shown an unrelated passage. These two dimensions are independent and only one of them currently has numbers.
 
 **Grounding verification is heuristic.** It checks lexical and structural support against retrieved evidence. It does not perform semantic entailment, so a paraphrase that subtly changes clinical meaning can pass.
 
-**Translation is unverified for clinical terminology.** Persian and Arabic output is not reviewed by a clinical translator. A term rendered imprecisely could change how urgent a caregiver believes the situation to be — arguably the highest-impact untested surface in the project.
+**Translation is unverified for clinical terminology.** Persian and Arabic translation now uses explicit source languages and a clinical-preservation prompt, but it has not been reviewed by clinical translators. A term or negation rendered imprecisely could change how urgent a caregiver believes the situation to be.
 
-**Local generation is serialized.** `llama.cpp` is not thread-safe, so `L3–L5` requests queue behind a single lock. `L1`/`L2` are unaffected because the fast path never calls the model. Horizontal scaling would require one model instance per worker or a dedicated inference server.
+**Local generation is serialized.** MedGemma generation uses one in-process lock, so concurrent `L3–L5` requests queue behind one local model instance. `L1`/`L2` are unaffected because the emergency fast path never calls the generator. API mode delegates generation to OpenAI, but remains subject to provider latency, quotas and network failures.
 
 **No caching or streaming.** Identical questions are recomputed from scratch, and answers are returned only when complete.
 
-**The safety net depends on a third party.** If the provider is slow or unavailable, the request falls back to the deterministic level after `LLM_TIMEOUT_SECONDS`. Safe, but a reduced safety net.
+**Optional LLM triage assists depend on a third party.** They are disabled by default. If explicitly enabled and the provider is slow or unavailable, the assist fails open and deterministic triage remains authoritative.
 
 **A silent-failure mode exists.** Changing `SPARSE_DIM` or `EMBEDDING_MODEL` without re-ingesting degrades recall with no error raised. Sparse-vector construction is centralized in one shared module to make this unlikely, but nothing currently detects the mismatch at startup.
 
@@ -55,14 +60,14 @@ This document is deliberately specific. A prototype that lists no limitations ha
 | Authorization | None |
 | Rate limiting | None |
 | Transport security | HTTP in local development |
-| Audit log storage | Unencrypted JSONL on local disk |
+| Audit log storage | JSONL on local disk; raw text disabled by default |
 | Log retention | No policy; grows without bound |
-| Data minimization | Symptom text and age are logged in full |
+| Data minimization | Character counts and operational metadata by default; raw question/age/answer require explicit opt-in |
 | Third-party data flow | Symptom text is sent to an external LLM provider |
 | Regulatory compliance | No HIPAA, GDPR, or medical-device conformance work |
 | Input abuse handling | Prompt-injection resistance tested; DoS and abuse are not |
 
-The audit log is the sharpest issue: it stores child age together with free-text symptom descriptions, which in combination is sensitive health information. It exists to make triage decisions reviewable — a genuine safety requirement — but the current implementation has no encryption, access control, or retention limit.
+Audit logging now omits raw question text, child age, answer text and evidence chunks by default. Setting `AUDIT_LOG_SENSITIVE_FIELDS=true` restores those fields for a protected, consented evaluation environment; do not enable it for public demos. Log encryption, access controls and retention limits are still not implemented.
 
 CORS is restricted to an explicit allowlist (`ALLOWED_ORIGINS`) rather than a wildcard, which is the one hardening measure that *is* in place.
 

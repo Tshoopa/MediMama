@@ -1,0 +1,4 @@
+# Optional dependencies for the Colab + ngrok demo launcher.
+-r requirements-local.txt
+pyngrok>=7.0.0
+nest-asyncio>=1.6.0

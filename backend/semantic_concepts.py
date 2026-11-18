@@ -4,7 +4,7 @@
 
 This layer is non-critical: it must never crash /ask, and it fails open
 (returns empty / no hint) on any error. It runs on CPU by default so its
-CUDA context can't collide with the local llama.cpp model in Colab.
+CUDA context can't compete with the local Transformers model in Colab.
 """
 
 import os
@@ -20,8 +20,6 @@ from backend.config import settings
 if str(settings.semantic_device).lower() == "cpu":
     os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
 
-import torch
-from sentence_transformers import SentenceTransformer, util
 
 
 # Each concept: example phrasings (exemplars), a retrieval hint appended to the
@@ -93,18 +91,20 @@ def _device() -> str:
 
 
 @lru_cache(maxsize=1)
-def _get_encoder() -> SentenceTransformer | None:
-    """Lazy-load the encoder once. Returns None (never raises) on failure so
-    the pipeline can continue without semantic hints."""
+def _get_encoder():
+    """Lazy-load local encoder only in local mode; API mode has no local ML stack."""
+    if settings.inference_mode == "api" or not settings.semantic_models_enabled:
+        return None
     try:
+        from sentence_transformers import SentenceTransformer
         model_name = settings.semantic_embedding_model
         device = _device()
         print(f"[semantic_concepts] loading encoder {model_name} on {device}")
         encoder = SentenceTransformer(model_name, device=device)
         encoder.eval()
         return encoder
-    except Exception as e:
-        print("[semantic_concepts] encoder load failed; disabled:", repr(e))
+    except Exception as exc:
+        print("[semantic_concepts] encoder load failed; disabled:", repr(exc))
         return None
 
 
@@ -116,8 +116,9 @@ def _get_concept_embeddings() -> dict[str, Any]:
     if encoder is None:
         return {}
 
-    device = _device()
     try:
+        import torch
+        device = _device()
         with torch.inference_mode():
             return {
                 name: encoder.encode(
@@ -138,6 +139,8 @@ def detect_concepts(symptoms_en: str, top_k: int = 3) -> list[tuple[str, float]]
     threshold. Fails open: returns [] on empty input or any error."""
     if not symptoms_en or not symptoms_en.strip():
         return []
+    if settings.inference_mode == "api" or not settings.semantic_models_enabled:
+        return []
 
     encoder = _get_encoder()
     concept_embeddings = _get_concept_embeddings()
@@ -146,6 +149,8 @@ def detect_concepts(symptoms_en: str, top_k: int = 3) -> list[tuple[str, float]]
 
     device = _device()
     try:
+        import torch
+        from sentence_transformers import util
         with torch.inference_mode():
             query_emb = encoder.encode(
                 symptoms_en,

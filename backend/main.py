@@ -3,7 +3,6 @@
 import copy
 import logging
 import re
-import threading
 import time
 from typing import Any
 from pathlib import Path
@@ -19,7 +18,10 @@ from backend.rag.retriever import retrieve
 from backend.rag.vector_store import get_client
 from backend.response_formatter import format_response
 from backend.safety_checker import is_safe_and_relevant
-from backend.translation import translate_to_english, translate_to_target
+from backend.translation import TranslationError, translate_to_english, translate_to_target
+from backend.llm_provider import (
+    generate_answer, initialize_generation_backend, generation_backend_status,
+)
 from backend.triage.engine import assess
 from backend.triage.llm_safety_net import WHY_SEPARATOR
 from backend.verification import verify_answer
@@ -44,30 +46,19 @@ app.add_middleware(
 
 # ── Resource loading ──────────────────────────────────────────────
 
-# Serializes access to the local llama.cpp model (not thread-safe).
-_llm_lock = threading.Lock()
-
 try:
     _qdrant = get_client()
-    log.info("Qdrant client ready.")
+    log.info("Qdrant client ready (%s).", settings.active_collection_name)
 except Exception as exc:
     log.warning("Qdrant unavailable, retrieval disabled: %r", exc)
     _qdrant = None
 
 try:
-    from llama_cpp import Llama
-
-    log.info("Loading local LLM: %s", settings.model_path)
-    _llm = Llama(
-        model_path=settings.model_path,
-        n_gpu_layers=settings.llm_n_gpu_layers,
-        n_ctx=settings.llm_context_size,
-        verbose=False,
-    )
-    log.info("Local LLM loaded.")
+    initialize_generation_backend()
 except Exception as exc:
-    log.warning("Local LLM not loaded, answers will be deterministic: %r", exc)
-    _llm = None
+    # Keep the API process available for health checks and deterministic
+    # emergency responses. Readiness will report the generation backend error.
+    log.warning("Generation backend is not ready; deterministic fallback only: %r", exc)
 
 
 # ── Constants ─────────────────────────────────────────────────────
@@ -212,27 +203,34 @@ def health() -> dict[str, str]:
 
 @app.get("/health/ready")
 def readiness() -> dict[str, Any]:
-    """Readiness probe. A missing Qdrant or LLM does not fail the API — both
-    have deterministic fallbacks."""
+    """Readiness probe, including the selected generation mode."""
+    generation = generation_backend_status()
+    ready = _qdrant is not None and bool(generation.get("ready"))
     return {
-        "status": "ready",
+        "status": "ready" if ready else "degraded",
+        "inference_mode": settings.inference_mode,
         "qdrant_available": _qdrant is not None,
-        "local_llm_loaded": _llm is not None,
+        "generation": generation,
+        "active_collection": settings.active_collection_name,
+        "embedding_backend": settings.active_embedding_backend,
     }
 
 
 # ── Language detection ────────────────────────────────────────────
 
 def detect_language(text: str, requested: str | None) -> str:
-    """Trust the client unless the text is in Arabic script while a
-    Latin-script language was requested — a common case when the user types
-    in their own language but leaves the selector on English."""
+    """Resolve Persian/Arabic from script first, then use the UI selection.
+
+    Persian-specific letters are stronger evidence than a stale UI selection.
+    Arabic and Persian share most of the Unicode block, so for ambiguous text
+    the requested UI language remains the tie-breaker.
+    """
     requested = (requested or "en").lower()
-    if requested in {"fa", "ar"}:
-        return requested
-    if not _ARABIC_SCRIPT.search(text or ""):
-        return requested
-    return "fa" if _PERSIAN_ONLY.search(text) else "ar"
+    if _PERSIAN_ONLY.search(text or ""):
+        return "fa"
+    if _ARABIC_SCRIPT.search(text or ""):
+        return requested if requested in {"fa", "ar"} else "ar"
+    return requested if requested in {"en", "fa", "ar"} else "en"
 
 
 # ── Safe wrappers (never crash /ask) ──────────────────────────────
@@ -245,13 +243,11 @@ def is_prompt_leak(text: str) -> bool:
     return sum(1 for ind in PROMPT_LEAK_INDICATORS if ind in lowered) >= 2
 
 
-def safe_translate_to_english(text: str) -> str:
-    try:
-        translated = translate_to_english(text)
-        return translated if isinstance(translated, str) and translated.strip() else text
-    except Exception as exc:
-        log.warning("Translation to English failed: %r", exc)
-        return text
+def safe_translate_to_english(text: str, source_lang: str = "auto") -> str:
+    translated = translate_to_english(text, source_lang=source_lang)
+    if not isinstance(translated, str) or not translated.strip():
+        raise TranslationError("The translation service returned an empty result.")
+    return translated
 
 
 def safe_translate_to_target(text: str, target_lang: str) -> str:
@@ -466,7 +462,7 @@ def clean_clinical_reason(reason: str) -> str:
 
 
 def remove_repeated_sentences(text: str) -> str:
-    """Drop duplicate sentences (Meditron sometimes repeats itself)."""
+    """Drop duplicate sentences repeated by a generative model."""
     seen = set()
     result = []
     for sentence in re.split(r"(?<=[.!?])\s+", text or ""):
@@ -501,7 +497,7 @@ def truncate_to_core(text: str, max_sentences: int = 4) -> str:
 
 
 def clean_llm_output(text: str) -> str:
-    """Full post-processing of raw Meditron output: strip quotes/prefixes/tags,
+    """Full post-processing of raw model output: strip quotes/prefixes/tags,
     reject prompt leaks, cut boilerplate, dedupe, and truncate."""
     text = (text or "").strip().strip('"').strip("'").strip("“").strip("”").strip()
 
@@ -768,13 +764,37 @@ def deterministic_response(
 @app.post("/ask", response_model=QueryResponse)
 def ask(req: QueryRequest) -> QueryResponse:
     start_time = time.time()
-    log.info("Request | age=%sm lang=%s", req.child_age_months, req.language)
+    log.info("Request | message_chars=%s lang=%s", len(req.symptoms or ""), req.language)
 
     # 1) Resolve the response language.
     detected_lang = detect_language(req.symptoms, req.language)
 
-    # 2) Translate to English for the pipeline.
-    symptoms_en = safe_translate_to_english(req.symptoms)
+    # 2) Translate to English for the pipeline. Never pass untranslated
+    # Persian/Arabic text into English-only safety, triage, or retrieval logic.
+    try:
+        symptoms_en = safe_translate_to_english(req.symptoms, source_lang=detected_lang)
+    except TranslationError as exc:
+        log.error("Input translation unavailable; refusing to triage: %r", exc)
+        localized = {
+            "en": "I cannot safely translate this message right now. Please try again shortly. If your child may be seriously unwell, seek urgent medical help.",
+            "fa": "در حال حاضر امکان ترجمهٔ مطمئن پیام شما وجود ندارد. لطفاً کمی بعد دوباره تلاش کنید. اگر حال کودک نگران‌کننده است، فوراً کمک پزشکی بگیرید.",
+            "ar": "لا يمكنني ترجمة رسالتك بشكل موثوق حالياً. يرجى المحاولة مرة أخرى بعد قليل. إذا كانت حالة طفلك مقلقة، فاطلب المساعدة الطبية العاجلة.",
+        }.get(detected_lang, "I cannot safely translate this message right now.")
+        localized_label = {
+            "en": "Translation unavailable",
+            "fa": "ترجمه در دسترس نیست",
+            "ar": "الترجمة غير متاحة",
+        }.get(detected_lang, "Translation unavailable")
+        return QueryResponse(
+            answer=localized,
+            emergency_level=None,
+            emergency_label=localized_label,
+            citations=[],
+            see_doctor_urgency=localized,
+            verified=False,
+            refusal=True,
+            refusal_type="translation_error",
+        )
 
     # 3) Safety + scope gate.
     try:
@@ -810,7 +830,7 @@ def ask(req: QueryRequest) -> QueryResponse:
     level = int(level)
     log.info("Triage L%d (%s) | %s", level, label_en, clinical_reason)
 
-    # 5) L1/L2 emergency fast-path: skip RAG and the local LLM entirely.
+    # 5) L1/L2 emergency fast-path: skip RAG and answer generation entirely.
     if level <= 2:
         response = deterministic_response(
             req=req,
@@ -872,54 +892,17 @@ def ask(req: QueryRequest) -> QueryResponse:
             clinical_reason=clinical_reason, show_citations=True,
         )
 
-    # 9) Local LLM unavailable -> deterministic answer (still with citations).
-    if _llm is None:
-        return deterministic_response(
-            req=req, detected_lang=detected_lang, level=level,
-            label_en=label_en, urgency_en=urgency_en,
-            citations_for_log=citations, reason="local LLM unavailable",
-            clinical_reason=clinical_reason, show_citations=True,
-        )
-
-    # 10) Prompt (Alpaca-style instruction template).
-    prompt = f"""Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
-
-### Instruction:
-You are MediMama, a warm and reassuring pediatric nurse. Answer the parent's question directly and briefly (maximum 4 sentences) using ONLY the facts from the Medical Evidence. Be gentle and comforting. Do not invent information or use bullet points.
-
-### Input:
-Medical Evidence:
-{context}
-
-Parent's Question:
-{symptoms_en}
-
-### Response:
-"""
-
-    # 11) Generate (serialized: llama.cpp is not thread-safe).
+    # 9) Generation via the selected backend (local MedGemma or OpenAI API).
     try:
-        with _llm_lock:
-            llm_response = _llm(
-                prompt,
-                max_tokens=200,
-                temperature=0.1,
-                top_p=0.9,
-                repeat_penalty=1.2,
-                stop=STOP_TOKENS,
-            )
-        choices = llm_response.get("choices", [])
-        if not choices:
-            raise ValueError("local LLM response has no choices.")
-        raw_answer_en = str(choices[0].get("text", "")).strip()
+        raw_answer_en = generate_answer(symptoms_en, context)
         if not raw_answer_en:
-            raise ValueError("local LLM returned an empty answer.")
+            raise ValueError("Generation backend returned an empty answer.")
     except Exception as exc:
-        log.warning("Local LLM generation failed: %r", exc)
+        log.warning("Answer generation failed; using deterministic response: %r", exc)
         return deterministic_response(
             req=req, detected_lang=detected_lang, level=level,
             label_en=label_en, urgency_en=urgency_en,
-            citations_for_log=citations, reason="local LLM generation failed",
+            citations_for_log=citations, reason="answer generation failed",
             clinical_reason=clinical_reason, show_citations=True,
         )
 

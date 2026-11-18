@@ -31,6 +31,40 @@ FEATURE_ALIASES = {
     "photophobia": "light_sensitivity",
 }
 
+# Maps each derived field to the sub-fields that can activate it.
+# Used to propagate negation downward before derived recomputation.
+DERIVED_IMPLICATION_MAP: dict[str, list[str]] = {
+    "has_rash":               ["non_blanching_rash", "spreading_rash",
+                               "rash_starting_on_face", "measles_like_rash"],
+    "spreading_rash":         ["measles_like_rash"],
+    "rash_starting_on_face":  ["measles_like_rash"],
+    "seizure":                ["prolonged_seizure"],
+    "severe_abdominal_pain":  ["appendicitis_signs", "strangulated_hernia_signs"],
+    "testicular_pain":        ["strangulated_hernia_signs"],
+    "urinary_pain":           ["flank_pain"],
+    "headache":               ["cns_infection_red_flags"],
+    "lethargic":              ["cns_infection_red_flags"],
+    "jaundice_or_yellow":     ["severe_or_early_jaundice"],
+    "vomiting_after_head_injury":  [],
+    "drowsy_after_head_injury":    [],
+    "post_submersion_coughing":    [],
+    "vomiting_after_allergen":     [],
+}
+
+# Maps medical_floor_tokens to the negatable field that owns them.
+# A token match is suppressed if its owning field is in negated_fields.
+FLOOR_TOKEN_FIELD_MAP: dict[str, str] = {
+    "rash":        "has_rash",
+    "fever":       "has_fever",
+    "vomit":       "has_vomiting",
+    "vomiting":    "has_vomiting",
+    "seizure":     "seizure",
+    "stridor":     "stridor",
+    "wheez":       "wheezing",
+    "jaundice":    "jaundice_or_yellow",
+}
+
+
 ALLOWED_TOP_LEVEL_PATTERN_KEYS = {
     "version", "description", "tokens", "count_terms", "negation_overrides",
     "boolean_patterns", "value_patterns", "derived_patterns", "medical_floor_tokens",
@@ -383,59 +417,104 @@ def _compute_animal_bite_severity(f: ClinicalFeatures, text: str) -> None:
     else:
         f.animal_bite.severity = "moderate"
 
+def _propagate_negation_to_children(f: ClinicalFeatures) -> None:
+    """
+    Before derived recomputation runs, clear every sub-feature whose parent
+    is explicitly negated. This prevents _recompute_derived_features from
+    resurrecting a negated parent through an un-negated child.
+
+    Example: user says "no rash" → has_rash in negated_fields →
+    spreading_rash, rash_starting_on_face, etc. are cleared here →
+    _recompute_derived_features sees all children False → has_rash stays False.
+    """
+    for parent, children in DERIVED_IMPLICATION_MAP.items():
+        if parent in f.negated_fields:
+            for child in children:
+                try:
+                    _safe_set_bool(f, child, False)
+                    f.negated_fields.add(child)
+                except (AttributeError, TypeError):
+                    pass
+
 
 def _recompute_derived_features(f: ClinicalFeatures, text: str) -> None:
     data = _load_patterns()
     derived = data.get("derived_patterns", {})
+    neg = f.negated_fields  # shorthand — set of negated field names
 
-    if f.temperature is not None:
+    # --- fever ---
+    if f.temperature is not None and "has_fever" not in neg:
         f.has_fever = True
 
-    if f.photophobia:
+    # --- photophobia / light_sensitivity (bidirectional alias) ---
+    if f.photophobia and "light_sensitivity" not in neg:
         f.light_sensitivity = True
-    if f.light_sensitivity:
+    if f.light_sensitivity and "photophobia" not in neg:
         f.photophobia = True
 
-    if f.non_blanching_rash or f.spreading_rash or f.rash_starting_on_face or f.measles_like_rash:
+    # --- rash: sub-features can only activate parent if parent not negated ---
+    if (f.non_blanching_rash or f.spreading_rash or
+            f.rash_starting_on_face or f.measles_like_rash) and "has_rash" not in neg:
         f.has_rash = True
 
     if f.measles_like_rash:
-        f.spreading_rash = True
-        f.rash_starting_on_face = True
+        if "spreading_rash" not in neg:
+            f.spreading_rash = True
+        if "rash_starting_on_face" not in neg:
+            f.rash_starting_on_face = True
 
-    if f.prolonged_seizure:
+    # --- seizure ---
+    if f.prolonged_seizure and "seizure" not in neg:
         f.seizure = True
 
-    if not f.head_injury and (
-        f.fall_from_height or ("head" in text and _has(text, derived.get("head_injury_context", [])))
+    # --- head injury ---
+    if not f.head_injury and "head_injury" not in neg and (
+        f.fall_from_height or (
+            "head" in text and _has(text, derived.get("head_injury_context", []))
+        )
     ):
         f.head_injury.present = True
 
-    f.vomiting_after_head_injury = f.vomiting_after_head_injury or (bool(f.head_injury) and f.vomiting)
-    f.drowsy_after_head_injury = f.drowsy_after_head_injury or (
-        bool(f.head_injury) and _has(text, derived.get("drowsy_after_head_injury", []))
-    )
+    # --- composite events: only set if not explicitly negated ---
+    if "vomiting_after_head_injury" not in neg:
+        f.vomiting_after_head_injury = (
+            f.vomiting_after_head_injury or (bool(f.head_injury) and f.vomiting)
+        )
+    if "drowsy_after_head_injury" not in neg:
+        f.drowsy_after_head_injury = f.drowsy_after_head_injury or (
+            bool(f.head_injury) and _has(text, derived.get("drowsy_after_head_injury", []))
+        )
+    if "post_submersion_coughing" not in neg:
+        f.post_submersion_coughing = f.post_submersion_coughing or (
+            f.water_submersion and _has(text, derived.get("post_submersion_coughing", []))
+        )
+    if "vomiting_after_allergen" not in neg:
+        f.vomiting_after_allergen = (
+            f.vomiting_after_allergen or (f.allergen_exposure and f.vomiting)
+        )
 
-    f.post_submersion_coughing = f.post_submersion_coughing or (
-        f.water_submersion and _has(text, derived.get("post_submersion_coughing", []))
-    )
-    f.vomiting_after_allergen = f.vomiting_after_allergen or (f.allergen_exposure and f.vomiting)
-
-    if f.appendicitis_signs:
+    # --- anatomical implications ---
+    if f.appendicitis_signs and "severe_abdominal_pain" not in neg:
         f.severe_abdominal_pain = True
     if f.strangulated_hernia_signs:
-        f.severe_abdominal_pain = True
-        f.testicular_pain = True
-    if f.flank_pain:
+        if "severe_abdominal_pain" not in neg:
+            f.severe_abdominal_pain = True
+        if "testicular_pain" not in neg:
+            f.testicular_pain = True
+    if f.flank_pain and "urinary_pain" not in neg:
         f.urinary_pain = True
     if f.cns_infection_red_flags:
-        f.headache = True
-        f.lethargic = True
-    if f.severe_or_early_jaundice:
+        if "headache" not in neg:
+            f.headache = True
+        if "lethargic" not in neg:
+            f.lethargic = True
+    if f.severe_or_early_jaundice and "jaundice_or_yellow" not in neg:
         f.jaundice_or_yellow = True
-    if f.poor_feeding and f.age_months is not None and f.age_months <= 3:
+    if (f.poor_feeding and f.age_months is not None
+            and f.age_months <= 3 and "lethargic" not in neg):
         f.lethargic = True
 
+    # --- severity computers (unchanged) ---
     _compute_burn_severity(f, text)
     _compute_fall_severity(f, text)
     _compute_hives_severity(f, text)
@@ -444,7 +523,6 @@ def _recompute_derived_features(f: ClinicalFeatures, text: str) -> None:
     _compute_animal_bite_severity(f, text)
 
     f.dehydration_score = _compute_dehydration_score(f)
-
     _mark_medical_floor(f, text)
 
 
@@ -454,16 +532,28 @@ def _mark_medical_floor(f: ClinicalFeatures, text: str) -> None:
     Simple bools and mild/unknown FeatureValues trigger the floor. Moderate
     and severe FeatureValues do NOT — they must stay free to be escalated to
     L2/L3 by the triage rules instead of being pinned down to L4 here.
+
+    Tokens and fields that are explicitly negated are skipped: a raw mention
+    of "rash" inside "no rash" must not activate the floor when has_rash is
+    in negated_fields.
     """
     data = _load_patterns()
 
-    if any(token in text for token in data.get("medical_floor_tokens", [])):
+    for token in data.get("medical_floor_tokens", []):
+        if token not in text:
+            continue
+        owning_field = FLOOR_TOKEN_FIELD_MAP.get(token)  # None if unmapped
+        if owning_field is not None:
+            if _canonical_field(owning_field) in f.negated_fields:
+                continue  # token is present but its field was negated — skip
         f.mild_medical_symptom = True
         return
 
     for field_name in getattr(f, "__dataclass_fields__", {}):
         if field_name in EXCLUDED_MEDICAL_FLOOR_FIELDS:
             continue
+        if _canonical_field(field_name) in f.negated_fields:
+            continue  # field was explicitly negated upstream — skip
         value = getattr(f, field_name, None)
 
         if isinstance(value, bool) and value is True:
@@ -473,7 +563,6 @@ def _mark_medical_floor(f: ClinicalFeatures, text: str) -> None:
         if isinstance(value, FeatureValue) and value.present and value.severity in ("mild", "unknown"):
             f.mild_medical_symptom = True
             return
-
 
 def _build_debug(f: ClinicalFeatures) -> dict[str, Any]:
     debug: dict[str, Any] = {}
@@ -518,7 +607,7 @@ def extract_clinical_features(
     # proper severity from _recompute_derived_features.
     if feature_assist:
         f = merge_feature_assist(f, feature_assist)
-
+    _propagate_negation_to_children(f)
     _recompute_derived_features(f, text)
 
     f.debug = _build_debug(f)

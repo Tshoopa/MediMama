@@ -224,14 +224,21 @@ Readiness probe with dependency status.
 ```json
 {
   "status": "ready",
+  "inference_mode": "api",
   "qdrant_available": true,
-  "local_llm_loaded": true
+  "generation": {
+    "mode": "api",
+    "provider": "OpenAI",
+    "model": "gpt-6.1-sol",
+    "ready": true,
+    "local_model_loaded": false
+  },
+  "active_collection": "medimama_api",
+  "embedding_backend": "openai"
 }
 ```
 
-`status` remains `ready` even when a dependency is missing, because both Qdrant and the local model have deterministic fallbacks. The API can still triage safely without either.
-
-Use this endpoint to distinguish *"degraded but safe"* from *"fully operational"* — a `false` value means answers will be deterministic rather than evidence-grounded, not that requests will fail.
+`status` is `ready` only when Qdrant and the selected generation backend are configured. Otherwise it reports `degraded`; the API may still serve deterministic emergency responses and fallback answers. Local mode reports the MedGemma model and whether local weights loaded successfully.
 
 ---
 
@@ -244,7 +251,7 @@ The `/ask` endpoint is designed not to return `5xx` for dependency failures. Ret
 | Retrieval error | Deterministic answer, no citations |
 | Generation error | Deterministic answer with citations |
 | Grounding failure | Deterministic answer with citations |
-| Translation error | Untranslated source text |
+| Input translation error | Request is not triaged; localized safe message returned |
 | Audit-logging error | Response returned; error logged to stderr |
 | Safety-checker error | `safety_critical` refusal |
 | Rule-engine error | Falls back to `L3`, not `L5` |

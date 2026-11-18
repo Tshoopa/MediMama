@@ -18,9 +18,9 @@ def test_routine_symptoms():
     assert label == "Semi-Urgent"
 
 def test_infant_fever_modifier():
-    # تست حساسیت سن: نوزاد زیر ۳ ماه با تب باید سطح ۲ (اورژانس) شود
+    # A febrile infant under 3 months requires ED assessment (L2), not resuscitation (L1).
     symptoms = "mild fever"
     age = 2 # ۲ ماهه
     level, label, urgency = assess(symptoms, age)
     assert level == 2
-    assert label == "Emergency (Infant Fever)"
+    assert label == "Emergency"

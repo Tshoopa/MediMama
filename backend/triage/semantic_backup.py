@@ -10,8 +10,7 @@ semantic_feature_detector.py (which sets features) and triage_rules.json
 
 from functools import lru_cache
 
-from sentence_transformers import SentenceTransformer, util
-
+from backend.config import settings
 from backend.triage.constants import NON_EMERGENCY_THRESHOLD
 from backend.triage.features import ClinicalFeatures
 
@@ -52,13 +51,18 @@ NON_EMERGENCY_CONCEPTS = {
 
 
 @lru_cache(maxsize=1)
-def _get_encoder() -> SentenceTransformer:
-    return SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
+def _get_encoder():
+    if settings.inference_mode == "api" or not settings.semantic_models_enabled:
+        return None
+    from sentence_transformers import SentenceTransformer
+    return SentenceTransformer(settings.semantic_embedding_model, device=settings.semantic_device)
 
 
 @lru_cache(maxsize=1)
 def _get_non_emergency_embeddings():
     encoder = _get_encoder()
+    if encoder is None:
+        return {}
     return {
         name: encoder.encode(data["exemplars"], convert_to_tensor=True)
         for name, data in NON_EMERGENCY_CONCEPTS.items()
@@ -86,7 +90,16 @@ def classify_non_emergency(text: str, features: ClinicalFeatures) -> int:
     if features.mild_medical_symptom:
         return 4
 
+    if settings.inference_mode == "api" or not settings.semantic_models_enabled:
+        # API-only mode deliberately has no local sentence-transformer models.
+        # Be conservative: ambiguous non-emergency symptoms are L4, and only
+        # explicit routine/non-medical queries are L5.
+        return 4
+
     encoder = _get_encoder()
+    if encoder is None:
+        return 4
+    from sentence_transformers import util
     query_emb = encoder.encode(text, convert_to_tensor=True)
 
     best_level = 4

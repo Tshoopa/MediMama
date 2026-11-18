@@ -11,13 +11,13 @@ Here, submit() returns immediately and we only block on the futures we
 actually decide to read.
 
 Cost/latency trade-off:
-- EAGER_SAFETY_NET=1 (default): the safety-net call starts right after
+- EAGER_SAFETY_NET=1: the safety-net call starts right after
   normalize, in parallel with feature assist and rule evaluation. When the
   rule engine resolves to L1/L2 and doesn't need it, the call still
-  completes and spends a Groq request — no added wall-clock latency, but
+  completes and spends an OpenAI API request — no added wall-clock latency, but
   real API cost.
-- EAGER_SAFETY_NET=0: strictly sequential (skip-if-not-needed), the
-  original cost-saving behavior.
+- EAGER_SAFETY_NET=0 (default): strictly sequential (skip-if-not-needed), the
+  cost-saving behavior.
 """
 
 from __future__ import annotations

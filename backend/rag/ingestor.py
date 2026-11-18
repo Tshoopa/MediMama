@@ -6,8 +6,8 @@ import re
 from typing import List, Dict, Tuple
 
 import numpy as np
-from sentence_transformers import SentenceTransformer
 from qdrant_client.models import PointStruct, SparseVector
+from backend.rag.embeddings import embed_texts, embedding_dimension
 
 # Works both as a package (backend.rag.ingestor) and run directly from rag/.
 try:
@@ -44,7 +44,7 @@ def _cosine_similarity(v1: np.ndarray, v2: np.ndarray) -> float:
 
 def smart_chunk_text(
     text: str,
-    embedder: SentenceTransformer,
+    embedder=None,
     similarity_threshold: float = 0.65,
     max_words: int = 220,
 ) -> List[str]:
@@ -58,8 +58,22 @@ def smart_chunk_text(
         return [cleaned_text]
 
     sentences = re.split(r'(?<=[.!?؟])\s+', cleaned_text)
-    if len(sentences) <= 1 or embedder is None:
-        return [cleaned_text]
+    if len(sentences) <= 1:
+        # API-only mode must not load a local model just for semantic chunking.
+        words = cleaned_text.split()
+        return [" ".join(words[i:i + max_words]) for i in range(0, len(words), max_words)]
+    if embedder is None:
+        chunks, current, count = [], [], 0
+        for sentence in sentences:
+            sentence_words = len(sentence.split())
+            if current and count + sentence_words > max_words:
+                chunks.append(" ".join(current))
+                current, count = [], 0
+            current.append(sentence)
+            count += sentence_words
+        if current:
+            chunks.append(" ".join(current))
+        return chunks
 
     embeddings = embedder.encode(sentences, show_progress_bar=False)
 
@@ -150,57 +164,86 @@ def load_qa_documents(json_path: str) -> List[Dict]:
 
 def ingest():
     client = get_client()
+    embedder = None
+    if config.settings.active_embedding_backend == "local":
+        try:
+            from sentence_transformers import SentenceTransformer
+        except ImportError as exc:
+            raise RuntimeError(
+                "Local ingestion requires requirements-local.txt"
+            ) from exc
+        print(f"[INFO] Loading local embedding model: {config.settings.embedding_model}")
+        embedder = SentenceTransformer(
+            config.settings.embedding_model,
+            device=config.settings.retrieval_device,
+        )
+        embedder.eval()
 
-    print(f"[INFO] Loading embedding model: {config.settings.embedding_model}")
-    embedder = SentenceTransformer(config.settings.embedding_model)
-    dim = embedder.get_sentence_embedding_dimension()
-
-    ensure_collection(client, vector_size=dim)
+    vector_size = embedding_dimension()
+    ensure_collection(client, vector_size=vector_size)
 
     qa_json = os.path.join(str(config.settings.data_dir), config.settings.qa_filename)
     qa_docs = load_qa_documents(qa_json)
 
-    points = []
-    point_id = 1
+    prepared = []
     for item in qa_docs:
         for chunk in smart_chunk_text(item["text"], embedder):
-            points.append(PointStruct(
-                id=point_id,
-                vector={
-                    "dense": embedder.encode(chunk).tolist(),
-                    "sparse": sparse_from_text(chunk),
-                },
-                payload={
-                    "source_type": "qa",
-                    "source_name": item["source_name"],
-                    "page_start": 0,
-                    "page_end": 0,
-                    "section": "faq",
-                    "subsection": item["category"],
-                    "topic": item["topic"],
-                    "age_group": item["age_group"],
-                    "content_type": "qa",
-                    "source_priority": config.settings.source_priority_faq,
-                    "url": item["url"],
-                    "question": item["question"],
-                    "answer": item["answer"],
-                    "text": chunk,
-                },
-            ))
-            point_id += 1
+            prepared.append((item, chunk))
 
-    if not points:
+    if not prepared:
         print("[ERROR] No points generated; nothing to upsert.")
         return
 
-    client.upsert(collection_name=config.settings.collection_name, points=points)
-    print(f"[INFO] Upserted {len(points)} points.")
+    texts = [chunk for _item, chunk in prepared]
+    vectors = embed_texts(texts)
+    if len(vectors) != len(prepared):
+        raise RuntimeError("Embedding provider returned a different number of vectors than inputs.")
+
+    points = []
+    for point_id, ((item, chunk), dense_vector) in enumerate(zip(prepared, vectors), start=1):
+        points.append(PointStruct(
+            id=point_id,
+            vector={
+                "dense": dense_vector,
+                "sparse": sparse_from_text(chunk),
+            },
+            payload={
+                "source_type": "qa",
+                "source_name": item["source_name"],
+                "page_start": 0,
+                "page_end": 0,
+                "section": "faq",
+                "subsection": item["category"],
+                "topic": item["topic"],
+                "age_group": item["age_group"],
+                "content_type": "qa",
+                "source_priority": config.settings.source_priority_faq,
+                "url": item["url"],
+                "question": item["question"],
+                "answer": item["answer"],
+                "text": chunk,
+                "embedding_backend": config.settings.active_embedding_backend,
+                "embedding_model": (
+                    config.settings.openai_embedding_model
+                    if config.settings.active_embedding_backend == "openai"
+                    else config.settings.embedding_model
+                ),
+            },
+        ))
+
+    batch_size = 256
+    for offset in range(0, len(points), batch_size):
+        client.upsert(
+            collection_name=config.settings.active_collection_name,
+            points=points[offset:offset + batch_size],
+        )
+    print(f"[INFO] Upserted {len(points)} points into '{config.settings.active_collection_name}'.")
 
     try:
-        info = client.get_collection(config.settings.collection_name)
+        info = client.get_collection(config.settings.active_collection_name)
         print(f"[INFO] Active points: {info.points_count}")
-    except Exception as e:
-        print("[WARN] Could not read collection info:", e)
+    except Exception as exc:
+        print("[WARN] Could not read collection info:", exc)
 
 
 if __name__ == "__main__":

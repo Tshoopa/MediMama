@@ -7,7 +7,7 @@ os.environ["SEMANTIC_DEVICE"] = "cpu"
 os.environ["RETRIEVAL_DEVICE"] = "cpu"
 os.environ["RERANKER_DEVICE"] = "cpu"
 
-# فقط llama.cpp / Meditron روی GPU
+# فقط MedGemma روی GPU
 os.environ["LLM_N_GPU_LAYERS"] = "-1"
 
 # فعلاً خاموش

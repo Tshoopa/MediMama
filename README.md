@@ -4,35 +4,20 @@
 
 A multilingual research prototype with one codebase and two selectable inference modes:
 
-- **Mode 1 — Local model:** **Qwen3-4B-Instruct** runs locally through Hugging Face Transformers.
-- **Mode 2 — API-only:** OpenAI handles answer generation, translation, and query embeddings. No local ML runtime is loaded.
+- **Mode 1 — Local model:** Google **MedGemma 1.5 4B** runs locally through Hugging Face Transformers. This is the mode to demonstrate local-model integration in a GitHub portfolio.
+- **Mode 2 — API-only:** OpenAI handles answer generation, translation, and query embeddings. The runtime does not install or load PyTorch, Transformers, Sentence Transformers, a local LLM, or a local reranker. This is the lightweight mode intended for low-resource demo hosting.
 
 Switch modes with one setting in `.env`:
 
 ```env
-INFERENCE_MODE=local  # Mode 1: local Qwen3-4B
-# INFERENCE_MODE=api  # Mode 2: API-only (default)
+INFERENCE_MODE=local  # Mode 1: local MedGemma
+# INFERENCE_MODE=api  # Mode 2: API-only
 ```
 
-`FastAPI` · `Qdrant` · `Qwen3-4B-Instruct / OpenAI API` · `Hybrid RAG` · `English / فارسی / العربية`
+`FastAPI` · `Qdrant` · `MedGemma 1.5 4B / OpenAI API` · `Hybrid RAG` · `English / فارسی / العربية`
 
-> ⚠️ **Research prototype — not a medical device.** Not clinically validated. Must not be used for diagnosis or as a substitute for professional medical care. In an emergency, contact local emergency services.
-
----
-
-## Why Qwen3 instead of MedGemma?
-
-The original design used `google/medgemma-1.5-4b-it` as the local model. MedGemma was replaced with `Qwen/Qwen3-4B-Instruct-2507` for the following reasons:
-
-| Factor | MedGemma 1.5 4B | Qwen3-4B-Instruct-2507 |
-|---|---|---|
-| Access | Gated — requires accepting Google Health AI license on Hugging Face | Fully open — Apache 2.0, no approval required |
-| Multilingual (AR/FA) | Limited | Strong; trained on broad multilingual data |
-| Instruction following | Good | Strong at conversation and clinical Q&A style |
-| Reproducibility | Anyone who wants to reproduce this project must request access and wait | Anyone can clone and run immediately |
-| Community ecosystem | Small | Large; well-supported tooling and quantized variants |
-
-For a research prototype where Persian and Arabic parents are the primary users, multilingual quality and zero-friction reproduction mattered more than a medical fine-tune on English-only data. MedGemma remains a valid choice for English-primary deployments where the gated license is acceptable.
+> [!WARNING]
+> **Research prototype — not a medical device.** Not clinically validated. Must not be used for diagnosis or as a substitute for professional medical care. In an emergency, contact local emergency services.
 
 ---
 
@@ -40,57 +25,59 @@ For a research prototype where Persian and Arabic parents are the primary users,
 
 | Capability | Mode 1: `local` | Mode 2: `api` |
 |---|---|---|
-| Answer-generation model | Qwen3-4B-Instruct, local | OpenAI API (`gpt-4o-mini`) |
+| Answer-generation model | MedGemma 1.5 4B, local | OpenAI API |
 | Query/document embeddings | PubMedBERT SentenceTransformer, local | OpenAI `text-embedding-3-small` |
-| Reranking | Local cross-encoder (`ms-marco-MiniLM-L-6-v2`) | Disabled; reciprocal-rank fusion is used |
-| Translation | Local Qwen3 (`TRANSLATION_BACKEND=auto`) | OpenAI API |
+| Reranking | Local cross-encoder | Disabled; reciprocal-rank fusion is used |
+| Semantic feature/concept models | Local SentenceTransformers | Disabled; deterministic feature/rule logic is used |
+| Translation | Local MedGemma by default (`TRANSLATION_BACKEND=auto`) | OpenAI API |
+| Optional LLM triage assists | OpenAI API, off by default | OpenAI API, off by default |
 | Heavy local ML libraries | Required | Not installed |
 | Intended use | GitHub portfolio, Colab, GPU workstation | Low-memory cloud demo |
 
-**Important:** Local mode uses Qwen3 for both answer generation and translation by default and does not require an OpenAI API key unless you explicitly enable optional OpenAI triage assists.
+**Important:** Local mode uses MedGemma locally for both answer generation and translation by default, and local encoders for RAG/semantic helpers; it does not require an OpenAI API key unless you explicitly enable optional OpenAI triage assists or choose `TRANSLATION_BACKEND=openai`. API mode uses OpenAI for answer generation, translation, and embeddings, with no local ML runtime dependencies.
 
----
+### Mode 1 — Local MedGemma
 
-## Mode 1 — Local Qwen3-4B
+Google's MedGemma model is distributed through Hugging Face with access/terms requirements. Before running it, open the [MedGemma model card](https://huggingface.co/google/medgemma-1.5-4b-it) and the [Google Health AI Developer Foundations terms](https://developers.google.com/health-ai-developer-foundations/medgemma), request/accept access, and place a Hugging Face read token in `.env` as `HF_TOKEN`. Do not commit that token or model weights.
 
-`Qwen/Qwen3-4B-Instruct-2507` is openly available on Hugging Face under Apache 2.0 — no gated access required. A CUDA GPU is strongly recommended for reasonable latency.
+The official model card documents local use with `AutoModelForImageTextToText` and Transformers 4.50+. A CUDA GPU is strongly recommended. MedGemma 1.5 4B is a newer medical model than the Meditron-7B GGUF previously referenced by this project, but it still needs MediMama-specific evaluation and is not clinically certified for pediatric triage.
+
+Install the local extras:
 
 ```bash
 pip install -r requirements-local.txt
 cp .env.example .env
 ```
 
-Set in `.env`:
+Then set:
 
 ```env
 INFERENCE_MODE=local
-LOCAL_MODEL_ID=Qwen/Qwen3-4B-Instruct-2507
-HF_TOKEN=secret-d133c3fa
+HF_TOKEN=your_huggingface_read_token
+LOCAL_MODEL_ID=google/medgemma-1.5-4b-it
 ```
 
 The model downloads to `LOCAL_MODEL_CACHE_DIR` on first use. Do not upload its weights to GitHub.
 
----
+### Mode 2 — API-only
 
-## Mode 2 — API-only (default)
-
-Lightweight mode intended for free-tier cloud hosting.
+This mode is the default and is intended for lightweight hosting:
 
 ```bash
 pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Set in `.env`:
+Set:
 
 ```env
 INFERENCE_MODE=api
-OPENAI_API_KEY=secret-b33b7952
-QDRANT_HOST=localhost
-QDRANT_PORT=6333
+OPENAI_API_KEY=your_openai_api_key
+QDRANT_URL=https://your-cluster.region.cloud.qdrant.io
+QDRANT_API_KEY=your_qdrant_cloud_key
 ```
 
-No local generative model, embedding model, or cross-encoder is loaded. OpenAI embeddings have a different vector dimension from local PubMedBERT vectors, so the project uses a separate `medimama_api` Qdrant collection. **Re-run ingestion after switching modes.**
+No local generative model, embedding model, semantic encoder, or cross-encoder is loaded. OpenAI embeddings have a different vector dimension from the local PubMedBERT vectors, so the project automatically uses a separate `medimama_api` Qdrant collection. **Run ingestion again after switching modes.**
 
 ---
 
@@ -98,51 +85,30 @@ No local generative model, embedding model, or cross-encoder is loaded. OpenAI e
 
 ```mermaid
 flowchart TD
-A["Parent question"] --> B["Safety & scope gate"]
-B --> C["Deterministic clinical feature extraction"]
-C --> D["Deterministic triage rules"]
-D --> E{"Triage level?"}
-
-E -->|L1/L2| F["Deterministic emergency response"]
-E -->|L3–L5| G["Hybrid retrieval: dense + sparse + RRF"]
-
-G --> H["LLM answer generation (local Qwen3 or OpenAI)"]
-H --> I["Grounding verification"]
-I --> J["Translated answer + citations"]
+    A[Parent question] --> B{Runtime mode}
+    B -->|local| C1[Local MedGemma translation]
+    B -->|api| C2[OpenAI translation]
+    C1 --> C[Safety and scope gate]
+    C2 --> C
+    C --> D[Deterministic clinical feature extraction]
+    D --> E[Deterministic triage rules]
+    E --> F{Level}
+    F -->|L1 / L2| G[Deterministic emergency response]
+    F -->|L3 - L5| H[Hybrid retrieval: dense + sparse + RRF]
+    H --> I{Runtime mode}
+    I -->|local| J[Local MedGemma 1.5 4B]
+    I -->|api| K[OpenAI API]
+    J --> L[Grounding verification]
+    K --> L
+    L --> M[Translated answer + citations]
+    G --> M
 ```
 
-**Safety invariant:** the LLM safety net may escalate a deterministic triage level, but it cannot downgrade it.
+**Safety invariant:** the LLM safety net may escalate a deterministic triage level, but it cannot downgrade it. This rule is enforced in the merge logic.
 
 ---
 
-## Quick start — API-only on Windows (local dev)
-
-```bash
-# 1. Start Qdrant
-docker run -d -p 6333:6333 qdrant/qdrant
-
-# 2. Install packages (API mode — no PyTorch)
-pip install -r requirements.txt
-
-# 3. Configure
-copy .env.example .env
-# Edit .env: set OPENAI_API_KEY, INFERENCE_MODE=api
-
-# 4. Ingest corpus
-python -m backend.rag.ingestor
-
-# 5. Start server
-uvicorn backend.main:app --host 0.0.0.0 --port 8000
-```
-
-Then open:
-- Frontend: http://localhost:8000
-- API docs: http://localhost:8000/docs
-- Qdrant dashboard: http://localhost:6333/dashboard
-
----
-
-## Quick start — Docker Compose
+## Quick start — API-only Docker demo
 
 ```bash
 git clone https://github.com/Tshoopa/medimama.git
@@ -152,13 +118,20 @@ cp .env.example .env
 docker compose up --build
 ```
 
-Ingest once after first build:
+For local Docker Compose, Qdrant runs beside the application. Ingest the corpus once:
 
 ```bash
 docker compose exec medimama python -m backend.rag.ingestor
 ```
 
-For public cloud hosting, use Qdrant Cloud and set `QDRANT_URL` / `QDRANT_API_KEY`; do not rely on an ephemeral local Qdrant volume on a free instance.
+Then open:
+
+- Frontend: http://localhost:8000
+- API docs: http://localhost:8000/docs
+- Readiness: http://localhost:8000/health/ready
+- Qdrant dashboard: http://localhost:6333/dashboard
+
+For public cloud hosting, use Qdrant Cloud and set `QDRANT_URL`/`QDRANT_API_KEY`; do not run an ephemeral local Qdrant volume on a free web instance.
 
 ---
 
@@ -167,14 +140,11 @@ For public cloud hosting, use Qdrant Cloud and set `QDRANT_URL` / `QDRANT_API_KE
 ```bash
 curl -X POST http://localhost:8000/ask \
   -H "Content-Type: application/json" \
-  -d '{
-    "symptoms": "My child has a barking cough and a harsh noise when breathing in.",
-    "child_age_months": 24,
-    "language": "en"
-  }'
+  -d '{"symptoms":"My child has a barking cough and a harsh noise when breathing in.",
+       "child_age_months":24,"language":"en"}'
 ```
 
-`emergency_level` runs from `1` (resuscitation) to `5` (home care). `null` means the request was not clinically triaged.
+`emergency_level` runs from `1` (resuscitation) to `5` (home care). `null` means the request was not clinically triaged, for example if translation is unavailable or the question is out of scope.
 
 ---
 
@@ -184,12 +154,13 @@ curl -X POST http://localhost:8000/ask \
 |---|---|
 | API | FastAPI · Pydantic · Docker |
 | Vector store | Qdrant (local server or cloud) |
-| Local generation | Qwen3-4B-Instruct via Transformers |
-| API generation | OpenAI API (`gpt-4o-mini`) |
+| Local generation | Google MedGemma 1.5 4B via Transformers |
+| API generation | OpenAI Responses API |
 | Local retrieval | PubMedBERT embeddings + cross-encoder |
 | API retrieval | OpenAI `text-embedding-3-small` + dense/sparse RRF |
-| Translation | Local Qwen3 (auto) or OpenAI API |
+| Translation | OpenAI API with explicit source/target language and clinical-preservation prompt |
 | Clinical logic | Deterministic feature extraction and triage rules |
+| Optional LLM assists | OpenAI API, disabled by default |
 
 ---
 
@@ -199,16 +170,17 @@ curl -X POST http://localhost:8000/ask \
 pytest
 ```
 
-The tests cover language handling, translation contracts, mode isolation, privacy-safe audit logging, and the escalation-only safety-net invariant.
+The tests cover language handling, translation contracts, mode isolation, privacy-safe audit logging, and the escalation-only safety-net invariant. Runtime integration with MedGemma, OpenAI, and Qdrant still requires credentials and a separate end-to-end test.
 
 ---
 
 ## Current limitations
 
-- Not clinically validated. The 92-case evaluation set is an engineering benchmark, not evidence of clinical safety.
-- Qwen3-4B-Instruct has not been formally evaluated on pediatric triage benchmarks; general instruction-tuning scores do not certify this use case.
-- In API mode, symptom text is transmitted to OpenAI. Disclose this clearly and use synthetic data for public demos.
+- This project is not clinically validated. Its existing 92-case evaluation set is an engineering benchmark, not evidence of clinical safety.
+- MedGemma 1.5 4B must be evaluated on MediMama's pediatric scenarios; the model card's general medical benchmarks do not certify this use case.
+- API mode uses external services for translation, embeddings, and answer generation. Symptom text is transmitted to OpenAI when those features are used; disclose this clearly and use synthetic data for public demos.
 - The API has no authentication or rate limiting. Do not expose it as a public health service.
-- Switching between local and API embeddings requires re-ingestion.
+- Switching between local and API embeddings requires re-ingestion; the modes use separate Qdrant collection names by default.
+- In local mode, translation still needs an OpenAI key. A completely offline translation pipeline is not included.
 
-See [docs/LIMITATIONS.md](docs/LIMITATIONS.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/RUNNING.md](docs/RUNNING.md), and [docs/CONFIGURATION.md](docs/CONFIGURATION.md).
+See [Limitations](docs/LIMITATIONS.md), [Architecture](docs/ARCHITECTURE.md), [Running](docs/RUNNING.md), and [Configuration](docs/CONFIGURATION.md).

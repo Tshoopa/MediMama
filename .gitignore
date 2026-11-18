@@ -1,8 +1,19 @@
-__pycache__/
-*.pyc
 .env
-*.gguf
+.env.*
+!.env.example
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.model_cache/
 models/
+*.gguf
 qdrant_storage/
+logs/
+.DS_Store
+
+# Local tunnel credentials must never be committed
 ngrok.txt
-.ipynb_checkpoints/

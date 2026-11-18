@@ -317,17 +317,23 @@
     },
     {
       "id": "spreading_rash_face_down",
-      "set_features": ["has_rash", "spreading_rash", "rash_starting_on_face"],
-      "threshold": 0.58,
-      "medical_signal": true,
-      "exemplars": [
-        "rash started on the face and spread down",
-        "red blotchy rash beginning on face and moving down body",
-        "rash spreading from face downwards",
-        "blotchy rash with fever and cough spreading down"
+      "negative_patterns": [
+        "no rash",
+        "no spots",
+        "no skin rash",
+        "no skin findings",
+        "no skin changes",
+        "without rash",
+        "denies rash",
+        "rash denied",
+        "rash absent",
+        "no rash noted",
+        "skin clear",
+        "no lesions"
       ],
-      "negative_patterns": []
+      "set_features": ["spreading_rash", "has_rash"]
     },
+
     {
       "id": "stiff_neck",
       "set_features": ["stiff_neck"],

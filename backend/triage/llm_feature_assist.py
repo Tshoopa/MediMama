@@ -1,6 +1,6 @@
 # backend/triage/llm_feature_assist.py
 
-"""Groq LLM feature assist, scoped to 11 ambiguous clinical fields.
+"""OpenAI feature assist, scoped to 11 ambiguous clinical fields.
 
 Assist-only, never a source of truth: it fills gaps the deterministic
 extractor leaves and never overrides a deterministic "present" or an
@@ -17,12 +17,10 @@ ungrounded claims are downgraded to "unknown".
 import json
 import re
 
+from backend.config import settings
+from backend.openai_client import get_openai_client
 from backend.triage.safety_config import (
-    get_groq_api_key,
-    get_groq_base_url,
-    get_groq_model,
     get_llm_debug,
-    get_llm_timeout_seconds,
     llm_feature_assist_enabled,
 )
 
@@ -175,38 +173,24 @@ def assess_feature_assist(text: str, age_months: int | None = None) -> dict:
     if not llm_feature_assist_enabled() or not text or not text.strip():
         return _empty_result()
 
-    api_key = get_groq_api_key()
     debug = get_llm_debug()
 
-    if not api_key:
-        if debug:
-            print("[LLM Feature Assist] Missing GROQ_API_KEY")
-        return _empty_result()
-
     try:
-        from openai import OpenAI
-
-        client = OpenAI(
-            api_key=api_key,
-            base_url=get_groq_base_url(),
-            timeout=get_llm_timeout_seconds(),
+        client = get_openai_client()
+        response = client.responses.create(
+            model=settings.openai_model,
+            instructions=_SYSTEM_PROMPT + "\nReturn only a JSON object.",
+            input=_build_user_prompt(text, age_months),
+            temperature=0,
+            max_output_tokens=700,
+            text={"format": {"type": "json_object"}},
         )
 
-        response = client.chat.completions.create(
-            model=get_groq_model(),
-            messages=[
-                {"role": "system", "content": _SYSTEM_PROMPT},
-                {"role": "user", "content": _build_user_prompt(text, age_months)},
-            ],
-            temperature=0.0,
-            max_tokens=500,
-        )
-
-        raw = response.choices[0].message.content or ""
+        raw = (getattr(response, "output_text", "") or "").strip()
         result = _sanitize_result(raw, text)
 
         if debug:
-            print("[LLM Feature Assist] model:", get_groq_model())
+            print("[LLM Feature Assist] model:", settings.openai_model)
             print("[LLM Feature Assist] raw:", raw)
             print("[LLM Feature Assist] sanitized:", result)
 
@@ -214,5 +198,5 @@ def assess_feature_assist(text: str, age_months: int | None = None) -> dict:
 
     except Exception as e:
         if debug:
-            print("[LLM Feature Assist] Groq error:", repr(e))
+            print("[LLM Feature Assist] OpenAI error:", repr(e))
         return _empty_result()

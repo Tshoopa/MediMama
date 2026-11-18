@@ -1,4 +1,9 @@
-# backend/audit_logger.py
+"""Privacy-conscious audit logging.
+
+By default, raw parent messages, child ages, answer text, and evidence chunks are
+not written to disk. Enable AUDIT_LOG_SENSITIVE_FIELDS only in a protected,
+consented evaluation environment.
+"""
 
 import json
 from datetime import datetime, timezone
@@ -11,17 +16,23 @@ from backend.models import Citation
 
 def _safe_model_dump(obj: Any) -> dict:
     if hasattr(obj, "model_dump"):
-        return obj.model_dump()
-    if hasattr(obj, "dict"):
-        return obj.dict()
-    if isinstance(obj, dict):
-        return obj
-    return {"value": str(obj)}
+        data = obj.model_dump()
+    elif hasattr(obj, "dict"):
+        data = obj.dict()
+    elif isinstance(obj, dict):
+        data = obj
+    else:
+        data = {"value": str(obj)}
+
+    if not settings.audit_log_sensitive_fields:
+        data.pop("chunk", None)
+        data.pop("text", None)
+        data.pop("answer", None)
+        data.pop("question", None)
+    return data
 
 
 def _serialize_emergency_level(emergency_level: int | None) -> int | None:
-    """Coerce an EmergencyLevel/IntEnum/int to a plain int. Stays None for
-    out-of-scope refusals, which were never clinically triaged."""
     if emergency_level is None:
         return None
     try:
@@ -41,27 +52,26 @@ def log_query(
     refusal: bool,
     refusal_type: str | None = None,
 ):
-    """Append one JSONL audit record. Must never crash the /ask endpoint, so
-    every failure is swallowed and logged to stdout instead."""
+    """Append a metadata-only JSONL record unless sensitive logging is enabled."""
     try:
         path: Path = settings.audit_log_path
         path.parent.mkdir(parents=True, exist_ok=True)
-
         record = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "question": question,
             "language": language,
-            "age_months": age_months,
+            "question_char_count": len(question or ""),
+            "answer_char_count": len(answer or ""),
             "emergency_level": _serialize_emergency_level(emergency_level),
             "citations": [_safe_model_dump(c) for c in (citations or [])],
-            "answer": answer,
             "verified": bool(verified),
             "refusal": bool(refusal),
             "refusal_type": refusal_type,
         }
-
+        if settings.audit_log_sensitive_fields:
+            record["question"] = question
+            record["age_months"] = age_months
+            record["answer"] = answer
         with path.open("a", encoding="utf-8") as file:
             file.write(json.dumps(record, ensure_ascii=False) + "\n")
-
     except Exception as exc:
         print("[audit_logger] failed to write audit log:", repr(exc))

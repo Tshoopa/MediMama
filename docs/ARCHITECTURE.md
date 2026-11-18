@@ -1,5 +1,15 @@
 # Architecture
 
+## Runtime modes
+
+The same codebase supports two modes selected by `INFERENCE_MODE`:
+
+- `local`: local answer generation with `google/medgemma-1.5-4b-it`; local PubMedBERT embeddings, local cross-encoder reranking, and optional local semantic sentence-transformer helpers.
+- `api`: OpenAI Responses API for generation and translation, OpenAI embeddings for dense retrieval, reciprocal-rank fusion without a cross-encoder, and deterministic triage features without local semantic models. The API requirements file does not install PyTorch, Transformers, or Sentence Transformers.
+
+Because the dense embedding dimensions differ, the default Qdrant collections are separated (`medimama_local` and `medimama_api`). Run ingestion after switching modes.
+
+
 MediMama separates **deterministic clinical logic** from **probabilistic language-model output**, then constrains how the two are allowed to interact.
 
 The entire design follows one invariant:
@@ -56,7 +66,7 @@ flowchart TD
     CF -->|"No citations"| FB["Deterministic Answer"]
     CF -->|"Citations kept"| CC["Evidence Context Builder<br/>top 3 chunks · 800 chars each"]
 
-    CC --> LG["Local LLM Generation<br/>Meditron-7B via llama.cpp"]
+    CC --> LG["Selected generation backend<br/>MedGemma local or OpenAI API"]
     LG --> PC{"Output Cleaning<br/>prompt leak · boilerplate · refusal · length"}
 
     PC -->|Rejected| FB
@@ -106,7 +116,7 @@ The requested language is not trusted blindly. If the symptom text contains Pers
 
 ### 2. Translation to English
 
-All internal clinical logic — pattern matching, rules, retrieval, and grounding — operates in English. Translation failures fall back to the original text rather than aborting the request.
+All internal clinical logic — pattern matching, rules, retrieval, and grounding — operates in English. Input translation failures stop the request with a localized safe message; untranslated Persian/Arabic text is never sent into English-only triage or retrieval.
 
 ### 3. Safety and scope gate
 
@@ -189,7 +199,7 @@ The rerank pool must stay larger than `top_k`. The cross-encoder can only correc
 
 ### 9. Grounded generation
 
-Retrieved evidence is assembled into a numbered context block — the top 3 chunks, capped at 800 characters each — and passed to Meditron-7B through an Alpaca-style instruction template.
+Retrieved evidence is assembled into a numbered context block — the top 3 chunks, capped at 800 characters each — and passed to the selected generation backend (MedGemma 1.5 4B locally or the OpenAI Responses API).
 
 Raw output then passes several rejection gates:
 
@@ -206,7 +216,7 @@ Any rejection returns a deterministic answer — never a partial, cleaned-up, or
 
 ### 10. Response assembly
 
-The answer, label, urgency text, and citations are translated into the detected language. Citations are deep-copied before translation so retrieval originals are never mutated, and the **untranslated** text is what reaches the audit log.
+The answer, label, urgency text, and citations are translated into the detected language. Translation follows the selected runtime (local MedGemma in local mode, OpenAI in API mode). Citations are deep-copied before translation so retrieval originals are never mutated. Audit logs redact raw text by default.
 
 ---
 
@@ -245,12 +255,12 @@ Every dependency is wrapped so a failure degrades the answer rather than failing
 | Failure | Behavior |
 | :--- | :--- |
 | Qdrant unavailable | No citations; deterministic answer |
-| Local LLM not loaded | Deterministic answer, citations still shown |
+| Generation backend not ready | Deterministic answer, citations still shown |
 | Generation error or empty output | Deterministic answer with citations |
 | Grounding verification failure | Deterministic answer with citations |
 | Safety-net timeout (`12s`) | Deterministic level used unchanged |
 | Malformed safety-net JSON | Response discarded; deterministic level stands |
-| Translation failure | Falls back to untranslated source text |
+| Input translation failure | Request is not triaged; a localized safe message is returned |
 | Audit-logging failure | Written to stderr; response still returned |
 | Safety-checker failure | Conservative `safety_critical` refusal |
 
@@ -269,22 +279,20 @@ Being explicit about the boundaries matters as much as the guarantees:
 
 ## Concurrency Model
 
-`llama.cpp` is not thread-safe, so local generation is serialized behind a single lock:
+MedGemma local generation is serialized behind a single process lock:
 
 ```python
-_llm_lock = threading.Lock()
-
-with _llm_lock:
-    llm_response = _llm(prompt, ...)
+with _model_lock:
+    output_ids = model.generate(**inputs, ...)
 ```
 
 Consequences:
 
-- Concurrent `L3–L5` requests **queue** on the local model
+- Concurrent `L3–L5` requests **queue** on the local MedGemma instance
 - `L1`/`L2` requests are **unaffected**, because the fast path never touches it
 - The safety-net LLM is a network call and runs concurrently without contention
 
-Retrieval models are pinned to CPU (`RETRIEVAL_DEVICE`, `RERANKER_DEVICE`) so their CUDA context does not collide with `llama.cpp`, which owns the GPU.
+In local mode, retrieval models can be pinned to CPU (`RETRIEVAL_DEVICE`, `RERANKER_DEVICE`) to avoid competing with MedGemma for GPU memory. API mode does not load these local encoders or rerankers.
 
 Horizontal scaling would require either one model instance per worker process or moving generation behind a dedicated inference server. This is a known limitation rather than a solved problem.
 

@@ -231,51 +231,21 @@ def _apply_safety_net(
     audit["llm_level"] = llm_level
     audit["llm_confidence"] = llm_confidence
 
-    is_high_confidence = llm_confidence == "high"
-
-    # 3. Decision Logic
-    
-    # A) Escalation (LLM says more urgent) -> Always Trust LLM
+    # The LLM safety net is escalation-only. It may raise urgency when it
+    # spots a risk missed by the deterministic rules, but it must never lower
+    # a level assigned by the deterministic engine.
     if llm_level < base_result.level:
         audit["adjusted"] = True
         audit["final_level"] = llm_level
         return _result(llm_level, llm_reason), audit
 
-    # B) Agreement -> Use base level, but keep LLM reason
     if llm_level == base_result.level:
         audit["final_level"] = base_result.level
         return _result(base_result.level, llm_reason), audit
 
-    # C) De-escalation (LLM says less urgent)
-    
-    # Define Safe Floors
-    # If base rule triggered L2 (Emergency), we need to be careful.
-    if base_result.level == 2:
-        if is_high_confidence:
-            # If the LLM is HIGHLY confident that this is NOT an emergency (e.g. pink eye, minor sprain)
-            # we allow it to downgrade fully to what it proposed. 
-            safe_floor = 5
-        else:
-            # If not highly confident, we don't let it drop past Urgent (L3)
-            safe_floor = 3
-    else:
-        safe_floor = 5
-
-    if is_high_confidence:
-        proposed = min(llm_level, safe_floor)
-    else:
-        one_step_down = base_result.level + 1
-        proposed = min(llm_level, one_step_down, safe_floor)
-
-    proposed = max(1, min(5, proposed))
-
-    if proposed != base_result.level:
-        audit["adjusted"] = True
-        audit["final_level"] = proposed
-        return _result(proposed, llm_reason), audit
-
     audit["final_level"] = base_result.level
-    return _result(base_result.level, llm_reason), audit
+    audit["ignored_deescalation"] = True
+    return base_result, audit
 
 
 def assess(

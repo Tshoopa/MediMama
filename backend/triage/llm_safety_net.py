@@ -1,17 +1,12 @@
 # backend/triage/llm_safety_net.py
 
 import json
-import os
 import re
-import time
-
+from backend.config import settings
+from backend.openai_client import get_openai_client
 from backend.triage.safety_config import (
     LLM_FAILOPEN_LEVEL,
-    get_groq_api_key,
-    get_groq_base_url,
-    get_groq_model,
     get_llm_debug,
-    get_llm_timeout_seconds,
     llm_safety_net_enabled,
 )
 
@@ -155,36 +150,9 @@ def _postprocess_level(raw_json_text: str, level: int, text: str, age_months: in
     return level
 
 
-def _get_provider_settings() -> tuple[str | None, str, str, str]:
-    """Resolve API key / base URL / model, falling back across
-    Groq -> DeepSeek -> OpenAI env vars, and derive the provider label."""
-    api_key = (
-        get_groq_api_key()
-        or os.environ.get("DEEPSEEK_API_KEY")
-        or os.environ.get("OPENAI_API_KEY")
-    )
-    base_url = (
-        get_groq_base_url()
-        or os.environ.get("DEEPSEEK_BASE_URL")
-        or os.environ.get("OPENAI_BASE_URL")
-        or "https://api.deepseek.com"
-    )
-    model = (
-        get_groq_model()
-        or os.environ.get("DEEPSEEK_MODEL")
-        or os.environ.get("OPENAI_MODEL")
-        or "deepseek-v4-flash"
-    )
-
-    base = base_url.lower()
-    if "deepseek" in base:
-        provider = "DeepSeek"
-    elif "openai" in base:
-        provider = "OpenAI"
-    else:
-        provider = "Groq"
-
-    return api_key, base_url, model, provider
+def _get_provider_settings() -> tuple[str, str]:
+    """The safety net always uses the single configured OpenAI account."""
+    return settings.openai_model, "OpenAI"
 
 
 def assess_safety_net(text: str, age_months: int | None = None) -> tuple[int, str, str]:
@@ -200,80 +168,40 @@ def assess_safety_net(text: str, age_months: int | None = None) -> tuple[int, st
     if not llm_safety_net_enabled() or not text or not text.strip():
         return LLM_FAILOPEN_LEVEL, default_reason, default_confidence
 
-    api_key, base_url, model, provider = _get_provider_settings()
+    model, provider = _get_provider_settings()
     timeout = get_llm_timeout_seconds() or 20.0
     debug = get_llm_debug()
 
-    if not api_key:
+    try:
+        client = get_openai_client()
+        response = client.responses.create(
+            model=settings.openai_model,
+            instructions=_SYSTEM_PROMPT + "\nReturn only a JSON object.",
+            input=_build_user_prompt(text, age_months),
+            temperature=0,
+            max_output_tokens=500,
+            text={"format": {"type": "json_object"}},
+        )
+        raw = (getattr(response, "output_text", "") or "").strip()
         if debug:
-            print("[LLM Safety Net] Missing API key")
+            print(f"[LLM Safety Net] provider: {provider} | model: {model}")
+            print(f"[LLM Safety Net] raw: {raw}")
+        if not raw or _looks_truncated(raw):
+            return LLM_FAILOPEN_LEVEL, default_reason, default_confidence
+
+        level, reason, why, confidence, parsed_ok = _parse_level_and_reason(raw)
+        if not parsed_ok:
+            return LLM_FAILOPEN_LEVEL, default_reason, default_confidence
+
+        level = _postprocess_level(raw, level, text, age_months)
+        if debug:
+            print(
+                f"[LLM Safety Net] proposed level: {level} | reason: {reason} "
+                f"| why: {why} | confidence: {confidence}"
+            )
+        combined_reason = f"{reason} {WHY_SEPARATOR} {why}" if why else reason
+        return level, combined_reason, confidence
+    except Exception as exc:
+        if debug:
+            print(f"[LLM Safety Net] OpenAI request failed: {exc!r}")
         return LLM_FAILOPEN_LEVEL, default_reason, default_confidence
-
-    max_retries = 3
-    initial_delay = 1.5
-
-    for attempt in range(max_retries):
-        try:
-            from openai import OpenAI
-
-            # max_retries=0: we run our own backoff loop below.
-            client = OpenAI(api_key=api_key, base_url=base_url, timeout=timeout, max_retries=0)
-
-            request_params = {
-                "model": model,
-                "messages": [
-                    {"role": "system", "content": _SYSTEM_PROMPT},
-                    {"role": "user", "content": _build_user_prompt(text, age_months)},
-                ],
-                "temperature": 0.0,
-                "max_tokens": 400,
-            }
-
-            # Prefer JSON mode; fall back to a plain call if the provider
-            # doesn't support response_format.
-            try:
-                response = client.chat.completions.create(
-                    **request_params, response_format={"type": "json_object"}
-                )
-            except Exception as json_mode_error:
-                if debug:
-                    print(f"[LLM Safety Net] {provider} json_mode failed: {repr(json_mode_error)}")
-                response = client.chat.completions.create(**request_params)
-
-            raw = response.choices[0].message.content or ""
-
-            if debug:
-                print(f"[LLM Safety Net] provider: {provider} | model: {model}")
-                print(f"[LLM Safety Net] raw: {raw}")
-
-            if not raw.strip() or _looks_truncated(raw):
-                if attempt < max_retries - 1:
-                    time.sleep(initial_delay * (2 ** attempt))
-                    continue
-                return LLM_FAILOPEN_LEVEL, default_reason, default_confidence
-
-            level, reason, why, confidence, parsed_ok = _parse_level_and_reason(raw)
-
-            if not parsed_ok:
-                if attempt < max_retries - 1:
-                    time.sleep(initial_delay * (2 ** attempt))
-                    continue
-                return LLM_FAILOPEN_LEVEL, default_reason, default_confidence
-
-            level = _postprocess_level(raw, level, text, age_months)
-
-            if debug:
-                print(f"[LLM Safety Net] final level: {level} | reason: {reason} | why: {why} | conf: {confidence}")
-
-            combined_reason = f"{reason} {WHY_SEPARATOR} {why}" if why else reason
-            return level, combined_reason, confidence
-
-        except Exception as e:
-            if debug:
-                print(f"[LLM Safety Net] error on attempt {attempt + 1}: {repr(e)}")
-            if attempt < max_retries - 1:
-                time.sleep(initial_delay * (2 ** attempt))
-                continue
-            break
-
-    return LLM_FAILOPEN_LEVEL, default_reason, default_confidence

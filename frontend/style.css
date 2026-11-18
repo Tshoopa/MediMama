@@ -1,10 +1,20 @@
-/* style.css */
+/* frontend/style.css */
 
 :root {
     --primary: #4A90E2;
+    --primary-dark: #357abd;
     --bg-color: #f5f7fa;
     --text-color: #333;
+    --text-muted: #666;
     --box-bg: #fff;
+    --border: #ccc;
+
+    /* Level 1 is the most urgent, so the scale runs red -> green. */
+    --l1-bg: #fdecea;  --l1-fg: #a4231b;  --l1-line: #e74c3c;
+    --l2-bg: #fdf0e6;  --l2-fg: #a85410;  --l2-line: #e67e22;
+    --l3-bg: #fdf8e3;  --l3-fg: #8a6d0b;  --l3-line: #f1c40f;
+    --l4-bg: #eaf2fb;  --l4-fg: #2c6199;  --l4-line: #4A90E2;
+    --l5-bg: #eaf7ef;  --l5-fg: #1e7e46;  --l5-line: #27ae60;
 }
 
 body {
@@ -32,7 +42,9 @@ header {
 }
 
 h1 { margin: 0; color: var(--primary); }
-p  { color: #666; font-size: 0.9em; }
+p  { color: var(--text-muted); font-size: 0.9em; }
+
+/* ── Form ───────────────────────────────────────────────── */
 
 .form-group { margin-bottom: 15px; }
 
@@ -45,9 +57,19 @@ label {
 input, select, textarea {
     width: 100%;
     padding: 10px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border);
     border-radius: 6px;
     box-sizing: border-box;
+    font-family: inherit;
+    font-size: 1em;
+}
+
+textarea { resize: vertical; min-height: 90px; }
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
 }
 
 button {
@@ -60,9 +82,13 @@ button {
     font-size: 1em;
     cursor: pointer;
     font-weight: bold;
+    font-family: inherit;
 }
 
-button:hover { background-color: #357abd; }
+button:hover { background-color: var(--primary-dark); }
+button:disabled { background-color: #a8c7ea; cursor: not-allowed; }
+
+/* ── State ──────────────────────────────────────────────── */
 
 .hidden { display: none; }
 
@@ -74,15 +100,15 @@ button:hover { background-color: #357abd; }
 }
 
 #error {
-    background-color: #fdecea;
-    color: #c0392b;
-    border: 1px solid #f5c6cb;
-    padding: 12px;
+    margin-top: 20px;
+    padding: 12px 15px;
     border-radius: 6px;
-    margin-top: 15px;
-    text-align: center;
-    font-weight: bold;
+    background: var(--l1-bg);
+    color: var(--l1-fg);
+    border-left: 4px solid var(--l1-line);
 }
+
+/* ── Results ────────────────────────────────────────────── */
 
 #results {
     margin-top: 30px;
@@ -93,39 +119,105 @@ button:hover { background-color: #357abd; }
 .urgency-box {
     padding: 15px;
     border-radius: 6px;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
     font-weight: bold;
     text-align: center;
-    color: #fff;
+    background: #eef1f5;
+    color: var(--text-color);
+    border-left: 5px solid var(--border);
+    font-size: 1.05em;
 }
 
-/* Traffic-light scale: L1 = most dangerous (red) -> L5 = home care (green). */
-.urgency-l1 { background-color: #c0392b; }
-.urgency-l2 { background-color: #e67e22; }
-.urgency-l3 { background-color: #f1c40f; color: #333; }
-.urgency-l4 { background-color: #2ecc71; }
-.urgency-l5 { background-color: #27ae60; }
+.urgency-box.urgency-l1 { background: var(--l1-bg); color: var(--l1-fg); border-left-color: var(--l1-line); }
+.urgency-box.urgency-l2 { background: var(--l2-bg); color: var(--l2-fg); border-left-color: var(--l2-line); }
+.urgency-box.urgency-l3 { background: var(--l3-bg); color: var(--l3-fg); border-left-color: var(--l3-line); }
+.urgency-box.urgency-l4 { background: var(--l4-bg); color: var(--l4-fg); border-left-color: var(--l4-line); }
+.urgency-box.urgency-l5 { background: var(--l5-bg); color: var(--l5-fg); border-left-color: var(--l5-line); }
 
 #urgencyAdvice {
+    margin: -5px 0 20px;
+    font-size: 0.95em;
+    color: var(--text-muted);
     text-align: center;
-    font-style: italic;
-    margin-bottom: 15px;
 }
 
-#citationsBlock {
-    margin-top: 15px;
+#answerText {
+    line-height: 1.7;
+    margin-bottom: 20px;
+    white-space: pre-wrap;
 }
+
+/* ── Citations ──────────────────────────────────────────── */
+
+#citationsBlock h3 {
+    font-size: 0.9em;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+#citationsList { list-style: none; padding: 0; margin: 0; }
+
+#citationsList li {
+    background: var(--bg-color);
+    border-left: 3px solid var(--primary);
+    border-radius: 4px;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    font-size: 0.9em;
+    line-height: 1.6;
+    color: #444;
+}
+
+#citationsList a { color: var(--primary-dark); text-decoration: none; }
+#citationsList a:hover { text-decoration: underline; }
 
 .citation-snippet {
-    color: #666;
-    font-size: 0.85em;
-    margin: 4px 0 10px 0;
+    margin: 6px 0 0;
+    font-size: 1em;
+    color: #555;
 }
 
-/* Mirror text alignment when the document is in RTL mode (fa/ar). */
+.disclaimer {
+    margin-top: 25px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    font-size: 0.8em;
+    color: #888;
+    text-align: center;
+}
+
+/* ── RTL (fa / ar) ──────────────────────────────────────── */
+
 [dir="rtl"] label,
 [dir="rtl"] #answerText,
-[dir="rtl"] #citationsList,
-[dir="rtl"] #urgencyAdvice {
+[dir="rtl"] #citationsList {
     text-align: right;
+}
+
+[dir="rtl"] #error,
+[dir="rtl"] .urgency-box,
+[dir="rtl"] #citationsList li {
+    border-left: none;
+    border-right-style: solid;
+    border-right-width: 5px;
+    border-right-color: var(--border);
+}
+
+[dir="rtl"] #error { border-right-color: var(--l1-line); }
+[dir="rtl"] #citationsList li { border-right-width: 3px; border-right-color: var(--primary); }
+
+[dir="rtl"] .urgency-box.urgency-l1 { border-right-color: var(--l1-line); }
+[dir="rtl"] .urgency-box.urgency-l2 { border-right-color: var(--l2-line); }
+[dir="rtl"] .urgency-box.urgency-l3 { border-right-color: var(--l3-line); }
+[dir="rtl"] .urgency-box.urgency-l4 { border-right-color: var(--l4-line); }
+[dir="rtl"] .urgency-box.urgency-l5 { border-right-color: var(--l5-line); }
+
+/* ── Small screens ──────────────────────────────────────── */
+
+@media (max-width: 640px) {
+    body { padding: 10px; }
+    .container { padding: 20px; }
+    h1 { font-size: 1.5em; }
 }

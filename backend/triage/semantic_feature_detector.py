@@ -6,8 +6,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
-from sentence_transformers import SentenceTransformer, util
-
+from backend.config import settings
 from backend.triage.features import ClinicalFeatures, FeatureValue
 
 
@@ -21,14 +20,22 @@ def _load_concept_data() -> dict[str, Any]:
 
 
 @lru_cache(maxsize=1)
-def _get_encoder() -> SentenceTransformer:
-    model_name = _load_concept_data().get("model", "all-MiniLM-L6-v2")
-    return SentenceTransformer(model_name)
+def _get_encoder():
+    if settings.inference_mode == "api" or not settings.semantic_models_enabled:
+        return None
+    try:
+        from sentence_transformers import SentenceTransformer
+    except ImportError as exc:
+        raise RuntimeError("Local semantic detection requires requirements-local.txt") from exc
+    model_name = _load_concept_data().get("model", settings.semantic_embedding_model)
+    return SentenceTransformer(model_name, device=settings.semantic_device)
 
 
 @lru_cache(maxsize=1)
 def _get_concept_embeddings() -> dict[str, Any]:
     encoder = _get_encoder()
+    if encoder is None:
+        return {}
     output: dict[str, Any] = {}
 
     for concept in _load_concept_data().get("concepts", []):
@@ -91,11 +98,16 @@ def apply_semantic_feature_detection(f: ClinicalFeatures, text: str) -> Clinical
     deterministic red flag — triage_rules.json makes the final decision.
     """
     text = text or ""
+    if settings.inference_mode == "api" or not settings.semantic_models_enabled:
+        return f
     concepts = _load_concept_data().get("concepts", [])
     if not concepts:
         return f
 
     encoder = _get_encoder()
+    if encoder is None:
+        return f
+    from sentence_transformers import util
     query_emb = encoder.encode(text, convert_to_tensor=True)
     concept_embeddings = _get_concept_embeddings()
 

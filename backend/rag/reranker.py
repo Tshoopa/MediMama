@@ -1,70 +1,53 @@
-# backend/rag/reranker.py
+"""Optional local cross-encoder reranking.
 
-import os
-from sentence_transformers import CrossEncoder
+API-only mode intentionally skips this stage to avoid downloading/loading any
+local ML model; reciprocal-rank fusion order is kept instead.
+"""
 
-from backend.models import Citation
+from functools import lru_cache
+
 from backend.config import settings
 
-os.environ.setdefault("TOKENIZERS_PARALLELISM", "false")
 
-_cross_encoder = None
-
-# Queries containing any of these are treated as acute clinical symptoms.
-_CLINICAL_SYMPTOM_TERMS = [
-    "pain", "hurt", "ache", "sore", "injury", "wound", "fever", "sick",
-    "constipat", "poop", "cough", "breathe", "breathing", "fall", "fell",
-    "hit", "bump", "swallow", "accident", "crying", "cry",
-]
-
-# HACK: the cross-encoder keeps ranking these lifestyle/developmental
-# topics highly for symptom queries (e.g. "tummy pain" -> "tummy time").
-# We just penalize them until the retrieval data is cleaned up properly.
-_DEVELOPMENTAL_TERMS = [
-    "tummy time", "cradle cap", "sleep training", "teething", "chewing on toys",
-]
-
-
+@lru_cache(maxsize=1)
 def _get_cross_encoder():
-    global _cross_encoder
-    if _cross_encoder is None:
-        model_name = getattr(settings, "reranker_model", "cross-encoder/ms-marco-MiniLM-L-6-v2")
-        device = str(getattr(settings, "reranker_device", "cpu") or "cpu").lower()
-        print(f"[INFO] Loading cross-encoder: {model_name} on {device}")
-        _cross_encoder = CrossEncoder(model_name, max_length=512, device=device)
-    return _cross_encoder
+    if settings.inference_mode == "api" or not settings.reranker_enabled:
+        return None
+    try:
+        from sentence_transformers import CrossEncoder
+    except ImportError as exc:
+        raise RuntimeError("Local reranking requires requirements-local.txt") from exc
+    return CrossEncoder(
+        settings.reranker_model,
+        max_length=512,
+        device=settings.reranker_device,
+    )
 
 
-def rerank(query: str, citations: list[Citation]) -> list[Citation]:
+def rerank(query: str, citations: list):
     if not citations or not query or not query.strip():
+        return citations
+    if settings.inference_mode == "api" or not settings.reranker_enabled:
         return citations
 
     try:
         encoder = _get_cross_encoder()
+        if encoder is None:
+            return citations
 
         pairs = []
-        for c in citations:
-            chunk_text = c.chunk or ""
-            if c.topic:
-                chunk_text = f"{c.topic}. {chunk_text}"
+        for citation in citations:
+            chunk_text = citation.chunk or ""
+            if citation.topic:
+                chunk_text = f"{citation.topic}. {chunk_text}"
             pairs.append([query, chunk_text[:512]])
-
-        scores = encoder.predict(pairs, batch_size=8, convert_to_numpy=True, show_progress_bar=False)
-
-        q_clean = query.lower()
-        is_symptom_query = any(w in q_clean for w in _CLINICAL_SYMPTOM_TERMS)
-
-        for c, score in zip(citations, scores):
-            score_val = float(score)
-            if is_symptom_query:
-                text = (c.chunk or "").lower() + " " + (c.topic or "").lower()
-                if any(t in text for t in _DEVELOPMENTAL_TERMS):
-                    score_val -= 8.0
-            c.score = round(score_val, 4)
-
-        citations.sort(key=lambda x: x.score, reverse=True)
+        scores = encoder.predict(
+            pairs, batch_size=8, convert_to_numpy=True, show_progress_bar=False
+        )
+        for citation, score in zip(citations, scores):
+            citation.score = round(float(score), 4)
+        citations.sort(key=lambda item: item.score, reverse=True)
         return citations
-
-    except Exception as e:
-        print("[reranker] failed, returning original order:", repr(e))
+    except Exception as exc:
+        print("[reranker] failed, keeping reciprocal-rank order:", repr(exc))
         return citations
