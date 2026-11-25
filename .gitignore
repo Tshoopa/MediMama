@@ -17,3 +17,4 @@ logs/
 
 # Local tunnel credentials must never be committed
 ngrok.txt
+.vscode/
