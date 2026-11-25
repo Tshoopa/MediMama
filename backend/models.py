@@ -1,7 +1,7 @@
 # backend/models.py
 
 from enum import IntEnum
-from typing import Optional
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -48,4 +48,46 @@ class QueryResponse(BaseModel):
 
     # Lets evaluation and clients distinguish refusal causes
     # ("safety_critical" | "medication_misuse" | "scope").
+    refusal_type: Optional[str] = None
+
+class ConversationCreateRequest(QueryRequest):
+    """Initial patient concern for the multi-turn conversation API."""
+
+    additional_context: Optional[str] = Field(default=None, max_length=4000)
+
+
+class ConversationTurnRequest(BaseModel):
+    """One answer to the currently active follow-up question."""
+
+    question_id: str = Field(..., min_length=1, max_length=80)
+    answer: str = Field(..., min_length=1, max_length=2000)
+
+
+class FollowUpOption(BaseModel):
+    value: str
+    label: str
+
+
+class FollowUpQuestion(BaseModel):
+    id: str
+    text: str
+    input_type: Literal["single_choice", "text"] = "single_choice"
+    options: list[FollowUpOption] = Field(default_factory=list)
+
+
+class ConversationResponse(BaseModel):
+    conversation_id: str
+    language: Literal["en", "fa", "ar"] = "en"
+    status: Literal[
+        "needs_clarification", "completed", "urgent_escalation",
+        "refused", "assessment_incomplete", "error"
+    ]
+    answer: Optional[str] = None
+    follow_up_question: Optional[FollowUpQuestion] = None
+    emergency_level: Optional[EmergencyLevel] = None
+    emergency_label: str
+    citations: list[Citation] = Field(default_factory=list)
+    see_doctor_urgency: str = ""
+    verified: bool = False
+    refusal: bool = False
     refusal_type: Optional[str] = None

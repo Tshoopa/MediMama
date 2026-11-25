@@ -184,3 +184,34 @@ The tests cover language handling, translation contracts, mode isolation, privac
 - In local mode, translation still needs an OpenAI key. A completely offline translation pipeline is not included.
 
 See [Limitations](docs/LIMITATIONS.md), [Architecture](docs/ARCHITECTURE.md), [Running](docs/RUNNING.md), and [Configuration](docs/CONFIGURATION.md).
+
+---
+
+## Conversational assessment workflow
+
+The web interface now supports a multi-turn workflow in addition to the original
+single-turn `POST /ask` endpoint. The initial form collects the child's age,
+preferred language, main concern, and optional context. The API may return one
+prewritten follow-up question at a time, or proceed directly to the existing
+MediMama answer pipeline.
+
+- `POST /conversations` starts a session.
+- `POST /conversations/{conversation_id}/turn` submits an answer to the active
+  follow-up question.
+- `DELETE /conversations/{conversation_id}` clears the session.
+
+The clarification component uses deterministic feature extraction and a small
+English/Persian/Arabic template bank. It does not diagnose or assign an urgency
+level. L1/L2 escalation and L3 same-day recommendations bypass optional
+clarification. A pending or incomplete assessment has a `null` emergency level
+and must never be interpreted as a low-risk result.
+
+Conversation state is stored in a bounded in-memory store with TTL. It is suitable
+only for a single-process demo: sessions disappear on restart and are not shared
+across workers or replicas. Configure `CONVERSATION_TTL_SECONDS`,
+`CONVERSATION_MAX_SESSIONS`, and `CONVERSATION_MAX_CLARIFICATION_TURNS` in `.env`.
+
+The new question bank and its selection logic are engineering prototypes. They
+must be reviewed by a qualified pediatric clinician before any real clinical
+use. The existing `/ask` request and response contract remains available for
+Colab and existing clients.

@@ -81,6 +81,9 @@
       "\\bwithout stiff neck\\b"
     ],
     "breathing_difficulty": [
+      "\\bno difficulty breathing\\b",
+      "\\bwithout difficulty breathing\\b",
+      "\\bnot having difficulty breathing\\b",
       "\\bno trouble breathing\\b",
       "\\bno breathing problem\\b",
       "\\bno breathing problems\\b",

@@ -304,7 +304,8 @@ Horizontal scaling would require either one model instance per worker process or
 backend/
 ├── main.py                          FastAPI app · /ask · /health · /health/ready
 ├── config.py                        Environment-driven settings
-├── models.py                        QueryRequest and QueryResponse schemas
+├── models.py                        QueryRequest, QueryResponse, and conversation schemas
+├── conversation_store.py            Bounded TTL-based in-memory conversation sessions
 ├── safety_checker.py                Safety and scope gate
 ├── semantic_concepts.py             Concept detection and retrieval hints
 ├── query_expansion.py               Optional semantic expansion
@@ -314,6 +315,7 @@ backend/
 ├── audit_logger.py                  JSONL audit trail
 │
 ├── triage/
+│   ├── clarification_engine.py      Controlled multilingual follow-up questions
 │   ├── engine.py                    Escalation-only merge and clamp
 │   ├── rule_engine.py               Deterministic evaluation
 │   ├── triage_rules.json            Declarative rule definitions
@@ -333,3 +335,41 @@ backend/
 ```
 
 Triage rules live in JSON rather than Python so clinical logic can be reviewed, diffed, and eventually validated by someone who does not read Python.
+---
+
+## Multi-turn conversation lifecycle
+
+The existing `/ask` flow remains the source of the final clinical response. The
+new conversation endpoints wrap that same pipeline rather than replacing the
+triage, emergency, RAG, generation, verification, or refusal modules.
+
+1. `POST /conversations` creates an isolated UUID session containing age,
+   preferred language, initial concern, and optional context.
+2. The backend runs the existing translation, scope/safety gate, and triage
+   assessment on the available narrative.
+3. L1/L2 results use the existing deterministic emergency fast path. L3 results
+   proceed to the normal same-day response; neither waits for clarification.
+4. For lower-urgency candidates only, `backend/triage/clarification_engine.py`
+   inspects existing extracted features and selects at most one template from a
+   small controlled question bank.
+5. The frontend submits the answer to
+   `POST /conversations/{conversation_id}/turn`. The store appends it to the same
+   case narrative and reruns translation, scope checks, feature extraction, and
+   deterministic triage before another question or final response is selected.
+6. Once no applicable question remains and the information is not marked
+   uncertain or conflicting, the same legacy answer/RAG/verification path runs.
+
+The new `backend/conversation_store.py` provides TTL expiry, bounded capacity,
+UUID IDs, and per-session locks. It stores only the state needed to reconstruct
+the case; the existing audit logger remains metadata-only by default. This
+store is ephemeral and single-process: a restart clears sessions, and sessions
+are not shared across workers or replicas. A persistent/distributed adapter is
+required for production deployment.
+
+The clarification feature does not set clinical urgency and does not modify
+`triage_rules.json`, feature patterns, emergency detection, or grounding logic.
+It treats extracted true values as present, explicit-negation markers as absent,
+and default false values as unknown. If explicit facts conflict across turns,
+the conversation stops with an incomplete state rather than merging them
+silently. The question wording and selection rules require pediatric clinician
+review before real clinical use.

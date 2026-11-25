@@ -271,3 +271,124 @@ ALLOWED_ORIGINS=http://localhost:8000,https://your-tunnel.ngrok-free.app
 ## Authentication
 
 None. The API is unauthenticated and unrate-limited, and is intended for local and demonstration use only. See [Limitations](LIMITATIONS.md).
+---
+
+## Conversational API
+
+The conversational API is additive. It does not replace or change the request
+or response contract of `POST /ask`.
+
+### `POST /conversations`
+
+Create a new conversation and submit the initial concern.
+
+```json
+{
+  "symptoms": "My child has a fever and diarrhea.",
+  "child_age_months": 24,
+  "language": "en",
+  "additional_context": "The child is still playing."
+}
+```
+
+`additional_context` is optional. Age remains expressed in months at the API
+boundary, including for the redesigned UI, which converts years to months.
+
+### `POST /conversations/{conversation_id}/turn`
+
+Submit the answer to the currently active question. For a quick reply, `answer`
+contains the question option's `value`; custom text is also accepted.
+
+```json
+{
+  "question_id": "symptom_duration",
+  "answer": "less_than_24_hours"
+}
+```
+
+The `question_id` must match the active question. An expired/unknown session
+returns `404`; a stale question or completed session returns `409`.
+
+### `DELETE /conversations/{conversation_id}`
+
+Delete the in-memory session. Returns `{ "deleted": true }` when successful.
+
+### Conversational response
+
+The response keeps the legacy clinical fields and adds conversation state plus the session language selected at creation.
+
+```json
+{
+  "conversation_id": "uuid",
+  "language": "en",
+  "status": "needs_clarification",
+  "answer": null,
+  "follow_up_question": {
+    "id": "symptom_duration",
+    "text": "How long has the current symptom been present?",
+    "input_type": "single_choice",
+    "options": [
+      {"value": "less_than_24_hours", "label": "Less than 24 hours"},
+      {"value": "one_to_two_days", "label": "1–2 days"},
+      {"value": "more_than_two_days", "label": "More than 2 days"},
+      {"value": "unknown", "label": "I'm not sure"}
+    ]
+  },
+  "emergency_level": null,
+  "emergency_label": "Assessment pending",
+  "citations": [],
+  "see_doctor_urgency": "No triage level has been finalized...",
+  "verified": false,
+  "refusal": false,
+  "refusal_type": null
+}
+```
+
+Possible `status` values:
+
+| Status | Meaning |
+|---|---|
+| `needs_clarification` | The backend returned one follow-up question. No final urgency level is assigned. |
+| `completed` | The existing MediMama pipeline returned a completed assessment. |
+| `urgent_escalation` | L1/L2 emergency escalation was returned immediately. |
+| `refused` | The existing safety/scope gate refused the request before a normal assessment. |
+| `assessment_incomplete` | Answers remained uncertain, conflicted, or clarification limits were reached. No level is assigned. |
+| `error` | Translation or another preflight error prevented assessment. |
+
+A `null` emergency level for `needs_clarification`, `assessment_incomplete`,
+`refused`, or `error` is not a low-risk assessment. Clients must render these
+states distinctly and never display them as green/self-care results.
+
+### Clarification and safety behavior
+
+The question bank currently collects symptom duration for selected reported
+symptoms and hydration context for reported vomiting/diarrhea when that context
+has not been mentioned. Question selection does not change triage thresholds
+or make a diagnosis. The deterministic triage engine is run before a question
+is considered. L1/L2 cases use the existing emergency fast path; L3 cases
+proceed immediately to the existing same-day guidance path.
+
+Unknown answers remain unknown. The feature-state adapter treats a feature as
+`present` only when extracted, `absent` only when an existing explicit-negation
+marker is present, and `unknown` otherwise. Conflicting explicit facts across
+turns stop completion rather than silently overwriting one another.
+
+Question templates are supplied directly in English, Persian, and Arabic; they
+are not machine-translated at response time. The question bank and selection
+conditions require review by a qualified pediatric clinician before real
+clinical use.
+
+### Session storage
+
+Sessions use a bounded, in-memory, TTL-based store protected by a global index
+lock and per-conversation turn locks. Defaults are 30 minutes, 500 sessions,
+and 3 clarification turns. Override them with:
+
+```env
+CONVERSATION_TTL_SECONDS=1800
+CONVERSATION_MAX_SESSIONS=500
+CONVERSATION_MAX_CLARIFICATION_TURNS=3
+```
+
+This storage is for a single-process demo only. Sessions are lost on process
+restart and are not shared across multiple workers or instances.

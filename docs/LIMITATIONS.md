@@ -131,3 +131,29 @@ None of these exist. That is the honest distance between this repository and a c
 MediMama is a research prototype and **not a medical device**. It does not provide medical advice, diagnosis, or treatment, and must not replace assessment by a qualified healthcare professional. Outputs may be incomplete, incorrect, or inappropriate for an individual child.
 
 If a child may be seriously ill, contact local emergency services immediately.
+---
+
+## Conversational clarification limitations
+
+The current clarification engine is deliberately small and deterministic. It
+contains language-specific, prewritten templates for symptom duration and hydration context
+in selected cases; it is not a complete pediatric history-taking system and
+does not represent comprehensive clinical guidance. A qualified pediatric
+clinician must review every template and selection condition before real-world
+clinical use.
+
+The engine does not assign urgency. It runs only after the existing safety gate
+and triage assessment, and it never delays L1/L2 emergency escalation or L3
+same-day review. It does not change clinical rules, thresholds, or RAG behavior.
+
+The session store is in-memory, bounded, and TTL-based. It is suitable only for
+a single-process demo, loses all sessions on restart, and cannot coordinate
+multiple workers or service instances. The unauthenticated API also does not
+provide identity-bound session access; do not use it for real patient data.
+
+When a user answers "I'm not sure", the unknown is retained and the system may
+finish in `assessment_incomplete` rather than treating it as a negative finding.
+Explicit present-versus-negated facts across turns are treated as conflicts;
+the prototype stops rather than deciding which report is current. This is a
+conservative engineering behavior, not a validated clinical conflict-resolution
+policy.

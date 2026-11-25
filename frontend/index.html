@@ -1,64 +1,170 @@
-<!DOCTYPE html>
-<!-- MediMama — pediatric triage AI demo frontend -->
+<!doctype html>
 <html lang="en" dir="ltr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MediMama - Pediatric Triage AI</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#14263D">
+  <meta name="description" content="MediMama pediatric health guidance prototype">
+  <title>MediMama — Pediatric Health Guidance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>MediMama 🍼</h1>
-            <p>AI-Powered Pediatric Triage &amp; Information</p>
-        </header>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#main" aria-label="MediMama home">
+        <span class="brand-mark" aria-hidden="true">MM</span>
+        <span class="brand-copy">
+          <span class="brand-name">MediMama</span>
+          <span class="brand-subtitle" data-i18n="brandSubtitle">Pediatric Health Guidance</span>
+        </span>
+      </a>
+      <div class="topbar-actions">
+        <label class="sr-only" for="language" data-i18n="languageLabel">Language</label>
+        <select id="language" class="language-select" aria-label="Language">
+          <option value="en">English</option>
+          <option value="fa">فارسی</option>
+          <option value="ar">العربية</option>
+        </select>
+        <span class="prototype-tag"><span class="prototype-dot"></span><span data-i18n="prototype">Prototype</span></span>
+      </div>
+    </header>
 
-        <main>
-            <form id="askForm">
-                <div class="form-group">
-                    <label for="language">Language / زبان / اللغة:</label>
-                    <select id="language" name="language" required>
-                        <option value="en">English</option>
-                        <option value="fa">فارسی</option>
-                        <option value="ar">العربية</option>
-                    </select>
-                </div>
+    <main id="main" class="main-content">
+      <section id="intakeView" class="intake-layout">
+        <div class="intro-panel">
+          <p class="eyebrow" data-i18n="introEyebrow">PEDIATRIC CARE, MADE CLEARER</p>
+          <h1 data-i18n="introTitle">A clearer next step for your child’s health.</h1>
+          <p class="intro-copy" data-i18n="introCopy">Share what is happening. MediMama can gather a little more context when needed, then provide information grounded in its clinical safety workflow.</p>
+          <div class="trust-note">
+            <span class="trust-icon" aria-hidden="true">i</span>
+            <p data-i18n="trustNote">MediMama is a research prototype, not a substitute for a qualified healthcare professional or emergency care.</p>
+          </div>
+          <div class="intro-meta">
+            <span class="meta-line"></span>
+            <span data-i18n="supportedLanguages">English · فارسی · العربية</span>
+          </div>
+        </div>
 
-                <div class="form-group">
-                    <label for="age">Child's Age (in months):</label>
-                    <input type="number" id="age" name="age" min="0" max="216"
-                           placeholder="e.g., 24 (for 2 years old)" required>
-                </div>
+        <section class="intake-card" aria-labelledby="intakeTitle">
+          <div class="card-heading">
+            <span class="step-label" data-i18n="stepOne">STEP 01</span>
+            <h2 id="intakeTitle" data-i18n="intakeTitle">Tell us about your child</h2>
+            <p data-i18n="intakeDescription">A few details will help us understand the concern.</p>
+          </div>
 
-                <div class="form-group">
-                    <label for="symptoms">Symptoms / Question:</label>
-                    <textarea id="symptoms" name="symptoms" rows="4"
-                              placeholder="Describe the symptoms here..." required></textarea>
-                </div>
-
-                <button type="submit" id="submitBtn">Ask MediMama</button>
-            </form>
-
-            <div id="loading" class="hidden" role="status">Processing your request...</div>
-
-            <div id="error" class="hidden" role="alert"></div>
-
-            <div id="results" class="hidden">
-                <div id="urgencyBox" class="urgency-box"></div>
-                <p id="urgencyAdvice"></p>
-                <h3>Answer:</h3>
-                <p id="answerText"></p>
-
-                <div id="citationsBlock" class="hidden">
-                    <h4>Citations:</h4>
-                    <ul id="citationsList"></ul>
-                </div>
+          <form id="askForm" novalidate>
+            <div class="field-group">
+              <label for="ageValue" data-i18n="ageLabel">Child’s age</label>
+              <div class="age-control">
+                <input id="ageValue" name="ageValue" type="number" min="0" max="216" step="1" inputmode="numeric" placeholder="e.g. 2" required aria-describedby="ageHelp">
+                <select id="ageUnit" name="ageUnit" aria-label="Age unit">
+                  <option value="months" data-i18n="months">Months</option>
+                  <option value="years" data-i18n="years">Years</option>
+                </select>
+              </div>
+              <span id="ageHelp" class="field-help" data-i18n="ageHelp">Enter a value from birth to 18 years.</span>
             </div>
-        </main>
-    </div>
 
-    <script src="config.js"></script>
-    <script src="app.js"></script>
+            <div class="field-group">
+              <label for="symptoms" data-i18n="symptomsLabel">What is concerning you?</label>
+              <textarea id="symptoms" name="symptoms" rows="5" minlength="3" maxlength="5000" placeholder="Describe what you have noticed..." required data-i18n-placeholder="symptomsPlaceholder"></textarea>
+              <span class="field-help" data-i18n="symptomsHelp">Use your own words. You do not need medical terminology.</span>
+            </div>
+
+            <div class="field-group">
+              <label for="additionalContext"><span data-i18n="additionalLabel">Additional context</span> <span class="optional" data-i18n="optional">Optional</span></label>
+              <textarea id="additionalContext" name="additionalContext" rows="2" maxlength="4000" placeholder="Anything else that may be useful..." data-i18n-placeholder="additionalPlaceholder"></textarea>
+            </div>
+
+            <p id="formError" class="inline-error" role="alert" hidden></p>
+            <button id="submitBtn" class="primary-button" type="submit">
+              <span data-i18n="beginAssessment">Begin assessment</span>
+              <span aria-hidden="true" class="button-arrow">→</span>
+            </button>
+          </form>
+          <p class="form-disclaimer" data-i18n="formDisclaimer">For emergencies, contact your local emergency service now. Do not wait for an online response.</p>
+        </section>
+      </section>
+
+      <section id="conversationView" class="conversation-layout" hidden>
+        <aside class="context-panel" aria-labelledby="contextTitle">
+          <div class="context-heading">
+            <span class="step-label" data-i18n="caseSummary">CASE SUMMARY</span>
+            <h2 id="contextTitle" data-i18n="patientContext">Patient context</h2>
+          </div>
+          <dl id="summaryList" class="summary-list"></dl>
+          <div id="assessmentStatus" class="assessment-status" role="status" aria-live="polite">
+            <span class="status-indicator"></span>
+            <span id="assessmentStatusText" data-i18n="awaitingInformation">Awaiting information</span>
+          </div>
+          <p class="context-disclaimer" data-i18n="contextDisclaimer">Only information provided in this conversation is considered. Unmentioned symptoms are not assumed to be absent.</p>
+          <button id="newConversationBtn" class="secondary-button" type="button" data-i18n="startNew">Start new conversation</button>
+        </aside>
+
+        <section class="conversation-panel" aria-label="MediMama conversation">
+          <div class="conversation-heading">
+            <div>
+              <span class="step-label" data-i18n="stepTwo">STEP 02</span>
+              <h1 data-i18n="conversationTitle">Your conversation</h1>
+              <p data-i18n="conversationDescription">MediMama may ask a focused follow-up before completing its assessment.</p>
+            </div>
+            <span class="secure-note"><span class="secure-dot"></span><span data-i18n="privateSession">Private demo session</span></span>
+          </div>
+
+          <div id="chatHistory" class="chat-history" role="log" aria-live="polite" aria-relevant="additions text"></div>
+
+          <div id="loading" class="loading-row" role="status" aria-live="polite" hidden>
+            <span class="loading-spinner" aria-hidden="true"></span>
+            <span id="loadingText" data-i18n="processing">Reviewing the information…</span>
+          </div>
+
+          <div id="conversationError" class="inline-error conversation-error" role="alert" hidden></div>
+
+          <form id="replyForm" class="reply-composer" hidden>
+            <div id="quickReplies" class="quick-replies" aria-label="Suggested answers"></div>
+            <label for="replyText" data-i18n="customAnswerLabel">Or write your answer</label>
+            <textarea id="replyText" rows="2" maxlength="2000" placeholder="Type a response…" data-i18n-placeholder="replyPlaceholder"></textarea>
+            <div class="composer-footer">
+              <span class="composer-hint" data-i18n="uncertainHint">It is okay to say you are not sure.</span>
+              <button id="sendReplyBtn" class="primary-button send-button" type="submit" disabled>
+                <span data-i18n="sendAnswer">Send answer</span>
+                <span aria-hidden="true" class="button-arrow">→</span>
+              </button>
+            </div>
+          </form>
+
+          <section id="finalSection" class="final-section" aria-labelledby="finalTitle" hidden>
+            <div id="urgencyBox" class="urgency-box" role="status" aria-live="polite">
+              <span class="urgency-indicator" aria-hidden="true"></span>
+              <div>
+                <span class="urgency-overline" id="urgencyOverline"></span>
+                <strong id="urgencyLabel"></strong>
+              </div>
+            </div>
+            <h2 id="finalTitle" data-i18n="guidanceTitle">Clinical guidance</h2>
+            <p id="answerText" class="answer-text"></p>
+            <p id="urgencyAdvice" class="urgency-advice"></p>
+            <details id="citationsBlock" class="citations-block" hidden>
+              <summary data-i18n="supportingSources">Supporting sources</summary>
+              <ol id="citationsList"></ol>
+            </details>
+            <p class="medical-disclaimer" data-i18n="medicalDisclaimer">This is informational guidance from a research prototype, not a diagnosis. It does not replace professional assessment and cannot rule out illness.</p>
+            <button id="newConversationFinalBtn" class="secondary-button" type="button" data-i18n="startAnother">Start another conversation</button>
+          </section>
+        </section>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <span>© MediMama</span>
+      <span data-i18n="footerDisclaimer">Research prototype · Not clinically validated</span>
+    </footer>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>

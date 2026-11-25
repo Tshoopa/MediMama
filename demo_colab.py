@@ -35,7 +35,7 @@ from pyngrok import ngrok
 PORT = int(os.environ.get("PORT", "8000"))
 STARTUP_TIMEOUT_SECONDS = 600
 
-os.environ.setdefault("INFERENCE_MODE", "local")
+os.environ["INFERENCE_MODE"] = "local"
 # Persistent model cache on Google Drive.
 DEFAULT_MODEL_CACHE = (
     "/content/drive/MyDrive/models/qwen3_4b_cache"
@@ -180,11 +180,18 @@ def serve() -> None:
 def main() -> None:
 
     # Check inference mode before starting the server.
-    inference_mode = os.environ.get("INFERENCE_MODE", "local").strip().lower()
-    if inference_mode not in ("local", "api"):
+    inference_mode = os.environ.get(
+        "INFERENCE_MODE",
+        "local"
+    ).strip().lower()
+
+    if inference_mode != "local":
+
         raise RuntimeError(
-            f"INFERENCE_MODE must be 'local' or 'api', got: {inference_mode!r}"
+            "demo_colab.py is designed for local Qwen3 mode. "
+            "Set INFERENCE_MODE=local."
         )
+
     # Read ngrok token from environment.
     token = os.environ.get(
         "NGROK_AUTH_TOKEN",

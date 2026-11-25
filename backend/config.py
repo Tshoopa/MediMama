@@ -103,6 +103,11 @@ class Settings(BaseSettings):
     source_priority_guidelines: int = 10
     source_priority_faq: int = 5
 
+    # ── In-memory conversational demo sessions ───────────────────
+    conversation_ttl_seconds: int = 1800
+    conversation_max_sessions: int = 500
+    conversation_max_clarification_turns: int = 3
+
     # ── CORS / server ─────────────────────────────────────────────
     allowed_origins: str = "http://localhost:8000,http://127.0.0.1:8000"
     host: str = "0.0.0.0"

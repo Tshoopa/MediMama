@@ -156,3 +156,28 @@ The test suite does not download MedGemma weights or make paid OpenAI requests. 
 | CORS error | Frontend origin not allowlisted | Add exact origin to `ALLOWED_ORIGINS` |
 | Slow first response | Model download or sleeping free host | Warm the service or use an always-on host for demos |
 
+
+---
+
+## Conversational frontend and API
+
+The static frontend remains served by FastAPI; no JavaScript framework or build
+step is required. Start the backend using the API-only or local-mode
+instructions above, then open `http://localhost:8000`. The interface supports
+English, Persian, and Arabic, with right-to-left layout for Persian and Arabic.
+
+The new conversation endpoints are available in both inference modes. The
+original `POST /ask` remains available for Colab and existing clients.
+
+Optional in-memory session settings:
+
+```env
+CONVERSATION_TTL_SECONDS=1800
+CONVERSATION_MAX_SESSIONS=500
+CONVERSATION_MAX_CLARIFICATION_TURNS=3
+```
+
+These settings are intended for a single-process demonstration. Do not run
+multiple Uvicorn workers or multiple replicas with in-memory conversation state;
+use a shared persistent session store before doing so. The current sessions are
+lost whenever the process restarts.

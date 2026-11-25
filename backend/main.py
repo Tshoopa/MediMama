@@ -7,13 +7,21 @@ import time
 from typing import Any
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from backend.audit_logger import log_query
 from backend.config import settings
-from backend.models import QueryRequest, QueryResponse
+from backend.models import (
+    QueryRequest, QueryResponse, ConversationCreateRequest,
+    ConversationTurnRequest, ConversationResponse, FollowUpQuestion,
+)
+from backend.conversation_store import ConversationStore, ConversationState
+from backend.triage.clarification_engine import (
+    find_feature_conflicts, localized_question, resolve_option_label,
+    select_next_question, is_uncertain_answer,
+)
 from backend.rag.retriever import retrieve
 from backend.rag.vector_store import get_client
 from backend.response_formatter import format_response
@@ -40,7 +48,7 @@ app = FastAPI(title="MediMama API", version="5.4.1")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins,
-    allow_methods=["POST", "GET"],
+    allow_methods=["POST", "GET", "DELETE"],
     allow_headers=["Content-Type", "ngrok-skip-browser-warning"],
 )
 
@@ -759,22 +767,71 @@ def deterministic_response(
     )
 
 
-# ── Main endpoint ─────────────────────────────────────────────────
+# ── Shared request preflight and answer pipeline ───────────────────
 
-@app.post("/ask", response_model=QueryResponse)
-def ask(req: QueryRequest) -> QueryResponse:
-    start_time = time.time()
-    log.info("Request | message_chars=%s lang=%s", len(req.symptoms or ""), req.language)
-
-    # 1) Resolve the response language.
-    detected_lang = detect_language(req.symptoms, req.language)
-
-    # 2) Translate to English for the pipeline. Never pass untranslated
-    # Persian/Arabic text into English-only safety, triage, or retrieval logic.
+def _prepare_query(req: QueryRequest, force_language: str | None = None) -> dict[str, Any]:
+    """Translate, scope-check, and assess once for both /ask and conversations."""
+    detected_lang = force_language or detect_language(req.symptoms, req.language)
     try:
         symptoms_en = safe_translate_to_english(req.symptoms, source_lang=detected_lang)
     except TranslationError as exc:
         log.error("Input translation unavailable; refusing to triage: %r", exc)
+        return {"kind": "translation_error", "detected_lang": detected_lang}
+
+    try:
+        safety_result = is_safe_and_relevant(symptoms_en)
+        if not isinstance(safety_result, tuple) or len(safety_result) != 3:
+            raise ValueError("is_safe_and_relevant must return (is_safe, message, refusal_type).")
+        is_safe, safety_msg, refusal_type = safety_result
+    except Exception as exc:
+        log.error("Safety checker failed, refusing conservatively: %r", exc)
+        return {
+            "kind": "refusal",
+            "detected_lang": detected_lang,
+            "symptoms_en": symptoms_en,
+            "message": (
+                "I could not safely process this request. If your child may be "
+                "seriously unwell or in immediate danger, contact emergency services now."
+            ),
+            "refusal_type": "safety_critical",
+        }
+
+    if not is_safe:
+        return {
+            "kind": "refusal",
+            "detected_lang": detected_lang,
+            "symptoms_en": symptoms_en,
+            "message": safety_msg,
+            "refusal_type": refusal_type or "scope",
+        }
+
+    level, label_en, urgency_en, clinical_reason = safe_assess(
+        symptoms_en, req.child_age_months, citations=[]
+    )
+    level = int(level)
+    log.info("Triage L%d (%s) | %s", level, label_en, clinical_reason)
+    return {
+        "kind": "assessment",
+        "detected_lang": detected_lang,
+        "symptoms_en": symptoms_en,
+        "level": level,
+        "label_en": label_en,
+        "urgency_en": urgency_en,
+        "clinical_reason": clinical_reason,
+    }
+
+
+def _process_query(
+    req: QueryRequest,
+    preflight: dict[str, Any] | None = None,
+) -> QueryResponse:
+    """Run the legacy evidence/answer pipeline using an optional shared preflight."""
+    start_time = time.time()
+    log.info("Request | message_chars=%s lang=%s", len(req.symptoms or ""), req.language)
+    preflight = preflight or _prepare_query(req)
+    detected_lang = str(preflight["detected_lang"])
+
+    if preflight["kind"] == "translation_error":
         localized = {
             "en": "I cannot safely translate this message right now. Please try again shortly. If your child may be seriously unwell, seek urgent medical help.",
             "fa": "در حال حاضر امکان ترجمهٔ مطمئن پیام شما وجود ندارد. لطفاً کمی بعد دوباره تلاش کنید. اگر حال کودک نگران‌کننده است، فوراً کمک پزشکی بگیرید.",
@@ -796,41 +853,21 @@ def ask(req: QueryRequest) -> QueryResponse:
             refusal_type="translation_error",
         )
 
-    # 3) Safety + scope gate.
-    try:
-        safety_result = is_safe_and_relevant(symptoms_en)
-        if not isinstance(safety_result, tuple) or len(safety_result) != 3:
-            raise ValueError("is_safe_and_relevant must return (is_safe, message, refusal_type).")
-        is_safe, safety_msg, refusal_type = safety_result
-    except Exception as exc:
-        log.error("Safety checker failed, refusing conservatively: %r", exc)
+    if preflight["kind"] == "refusal":
         return refusal_response(
             req=req,
-            msg=(
-                "I could not safely process this request. If your child may be "
-                "seriously unwell or in immediate danger, contact emergency "
-                "services now."
-            ),
+            msg=str(preflight["message"]),
             detected_lang=detected_lang,
-            refusal_type="safety_critical",
+            refusal_type=str(preflight["refusal_type"]),
         )
 
-    if not is_safe:
-        return refusal_response(
-            req=req,
-            msg=safety_msg,
-            detected_lang=detected_lang,
-            refusal_type=refusal_type or "scope",
-        )
+    symptoms_en = str(preflight["symptoms_en"])
+    level = int(preflight["level"])
+    label_en = str(preflight["label_en"])
+    urgency_en = str(preflight["urgency_en"])
+    clinical_reason = str(preflight["clinical_reason"])
 
-    # 4) Triage.
-    level, label_en, urgency_en, clinical_reason = safe_assess(
-        symptoms_en, req.child_age_months, citations=[]
-    )
-    level = int(level)
-    log.info("Triage L%d (%s) | %s", level, label_en, clinical_reason)
-
-    # 5) L1/L2 emergency fast-path: skip RAG and answer generation entirely.
+    # L1/L2 emergency fast-path: skip RAG and answer generation entirely.
     if level <= 2:
         response = deterministic_response(
             req=req,
@@ -846,7 +883,7 @@ def ask(req: QueryRequest) -> QueryResponse:
         log.info("Emergency response in %.2fs", time.time() - start_time)
         return response
 
-    # 6) Semantic concept hints + retrieval.
+    # Semantic concept hints + retrieval.
     try:
         from backend.semantic_concepts import detect_concepts, get_retrieval_hint
         detected_concepts = detect_concepts(symptoms_en) or []
@@ -873,7 +910,6 @@ def ask(req: QueryRequest) -> QueryResponse:
     citations = filter_citations_for_display(citations_raw)
     log.info("Retrieved %d raw, %d displayable", len(citations_raw), len(citations))
 
-    # 7) No usable citations -> deterministic answer.
     if not citations:
         return deterministic_response(
             req=req, detected_lang=detected_lang, level=level,
@@ -882,7 +918,6 @@ def ask(req: QueryRequest) -> QueryResponse:
             clinical_reason=clinical_reason, show_citations=False,
         )
 
-    # 8) Build evidence context.
     context = build_context(citations)
     if not context:
         return deterministic_response(
@@ -892,7 +927,7 @@ def ask(req: QueryRequest) -> QueryResponse:
             clinical_reason=clinical_reason, show_citations=True,
         )
 
-    # 9) Generation via the selected backend (local MedGemma or OpenAI API).
+    # Generation via the selected backend (local MedGemma or OpenAI API).
     try:
         raw_answer_en = generate_answer(symptoms_en, context)
         if not raw_answer_en:
@@ -906,7 +941,6 @@ def ask(req: QueryRequest) -> QueryResponse:
             clinical_reason=clinical_reason, show_citations=True,
         )
 
-    # 12) Clean the raw output; reject empty/leaked results.
     cleaned_answer = clean_llm_output(raw_answer_en)
     if not cleaned_answer or len(cleaned_answer.split()) < 5:
         log.warning("Empty or leaked LLM output; using deterministic fallback.")
@@ -917,7 +951,6 @@ def ask(req: QueryRequest) -> QueryResponse:
             clinical_reason=clinical_reason, show_citations=True,
         )
 
-    # 13) Reject explicit "I can't answer" style responses.
     if any(phrase in cleaned_answer.lower() for phrase in EXPLICIT_REFUSAL_PHRASES):
         log.warning("LLM explicitly refused; using deterministic fallback.")
         return deterministic_response(
@@ -927,7 +960,6 @@ def ask(req: QueryRequest) -> QueryResponse:
             clinical_reason=clinical_reason, show_citations=True,
         )
 
-    # 14) Grounding verification: the answer must be supported by the evidence.
     try:
         verified, verify_msg = verify_answer(cleaned_answer, citations)
     except Exception as exc:
@@ -943,19 +975,16 @@ def ask(req: QueryRequest) -> QueryResponse:
             clinical_reason=clinical_reason, show_citations=True,
         )
 
-    # 15) Final grounded answer.
     final_answer = safe_translate_to_target(cleaned_answer, detected_lang)
     final_label = safe_translate_to_target(label_en, detected_lang)
     final_urgency = safe_translate_to_target(urgency_en, detected_lang)
     final_citations = translate_citations(citations, detected_lang)
-
     formatted = format_response(final_answer, level, final_label, final_urgency)
 
     safe_log_query(
         req.symptoms, detected_lang, req.child_age_months, level,
         citations, formatted, True, False, refusal_type=None,
     )
-
     log.info("Grounded LLM answer L%d in %.2fs", level, time.time() - start_time)
 
     return QueryResponse(
@@ -968,6 +997,229 @@ def ask(req: QueryRequest) -> QueryResponse:
         refusal=False,
         refusal_type=None,
     )
+
+
+@app.post("/ask", response_model=QueryResponse)
+def ask(req: QueryRequest) -> QueryResponse:
+    """Backward-compatible single-turn endpoint used by Colab and existing clients."""
+    return _process_query(req)
+
+
+# ── Conversational workflow ────────────────────────────────────────
+
+conversation_store = ConversationStore(
+    ttl_seconds=max(1, settings.conversation_ttl_seconds),
+    max_sessions=max(1, settings.conversation_max_sessions),
+)
+
+_CONVERSATION_COPY = {
+    "pending_label": {
+        "en": "Assessment pending", "fa": "ارزیابی در انتظار تکمیل", "ar": "التقييم قيد الانتظار",
+    },
+    "pending_urgency": {
+        "en": "No triage level has been finalized while clarification is pending. This is not a low-risk result.",
+        "fa": "تا زمان تکمیل اطلاعات، سطح تریاژ نهایی نشده است. این وضعیت به معنی کم‌خطر بودن نیست.",
+        "ar": "لم يتم تحديد مستوى الفرز النهائي أثناء انتظار التوضيح. هذا لا يعني أن الحالة منخفضة الخطورة.",
+    },
+    "incomplete_label": {
+        "en": "Assessment incomplete", "fa": "ارزیابی ناتمام", "ar": "التقييم غير مكتمل",
+    },
+    "incomplete_message": {
+        "en": "I could not complete a reliable assessment from the information provided. I have not treated unknown information as a negative symptom. Please contact a qualified healthcare professional for an assessment, especially if your child is getting worse or you remain concerned. Seek emergency help immediately for severe or rapidly worsening symptoms.",
+        "fa": "با اطلاعات فعلی نتوانستم ارزیابی قابل اتکایی را کامل کنم. موارد نامشخص را به‌عنوان نبودِ علامت در نظر نگرفته‌ام. برای ارزیابی با متخصص واجد صلاحیت تماس بگیرید، به‌ویژه اگر حال کودک رو به بدتر شدن است یا همچنان نگران هستید. در صورت بروز علائم شدید یا بدترشدن سریع، فوراً کمک اورژانسی بگیرید.",
+        "ar": "لم أتمكن من إكمال تقييم موثوق بالمعلومات المتاحة. لم أعتبر المعلومات غير المعروفة دليلاً على غياب الأعراض. يرجى التواصل مع مختص صحي مؤهل للتقييم، خاصة إذا كانت حالة طفلك تسوء أو ما زلت قلقاً. اطلب المساعدة الطارئة فوراً عند ظهور أعراض شديدة أو تدهور سريع.",
+    },
+    "conflict_message": {
+        "en": "Some information in this conversation conflicts with an earlier answer. I will not silently choose one version or complete a triage assessment from conflicting details. Please start a new conversation with the corrected current information, or contact a healthcare professional.",
+        "fa": "بخشی از اطلاعات این گفتگو با پاسخ قبلی تناقض دارد. بدون روشن شدن تناقض، هیچ‌کدام را به‌صورت خودکار انتخاب نمی‌کنم و تریاژ را کامل نمی‌کنم. لطفاً با اطلاعات صحیح و فعلی گفتگوی جدیدی آغاز کنید یا با متخصص سلامت تماس بگیرید.",
+        "ar": "تتعارض بعض المعلومات في هذه المحادثة مع إجابة سابقة. لن أختار إحدى الروايتين تلقائياً أو أكمل الفرز اعتماداً على معلومات متضاربة. يرجى بدء محادثة جديدة بالمعلومات الحالية المصححة أو التواصل مع مختص صحي.",
+    },
+}
+
+
+def _localized_conversation_text(key: str, language: str) -> str:
+    return _CONVERSATION_COPY[key].get(language, _CONVERSATION_COPY[key]["en"])
+
+
+def _conversation_result(
+    state: ConversationState,
+    result: QueryResponse,
+    status: str,
+) -> ConversationResponse:
+    state.status = status
+    state.current_question_id = None
+    state.triage_level = int(result.emergency_level) if result.emergency_level is not None else None
+    return ConversationResponse(
+        conversation_id=state.conversation_id,
+        language=state.language,
+        status=status,
+        answer=result.answer,
+        follow_up_question=None,
+        emergency_level=result.emergency_level,
+        emergency_label=result.emergency_label,
+        citations=result.citations,
+        see_doctor_urgency=result.see_doctor_urgency,
+        verified=result.verified,
+        refusal=result.refusal,
+        refusal_type=result.refusal_type,
+    )
+
+
+def _incomplete_response(state: ConversationState, message_key: str = "incomplete_message") -> ConversationResponse:
+    message = _localized_conversation_text(message_key, state.language)
+    state.status = "assessment_incomplete"
+    state.current_question_id = None
+    state.triage_level = None
+    return ConversationResponse(
+        conversation_id=state.conversation_id,
+        language=state.language,
+        status="assessment_incomplete",
+        answer=message,
+        follow_up_question=None,
+        emergency_level=None,
+        emergency_label=_localized_conversation_text("incomplete_label", state.language),
+        citations=[],
+        see_doctor_urgency=message,
+        verified=False,
+        refusal=False,
+        refusal_type=None,
+    )
+
+
+def _advance_conversation(state: ConversationState) -> ConversationResponse:
+    combined_text = state.clinical_text()
+    request = QueryRequest(
+        symptoms=combined_text,
+        child_age_months=state.child_age_months,
+        language=state.language,
+    )
+    preflight = _prepare_query(request, force_language=state.language)
+
+    if preflight["kind"] == "translation_error":
+        result = _process_query(request, preflight)
+        return _conversation_result(state, result, "error")
+
+    if preflight["kind"] == "refusal":
+        result = _process_query(request, preflight)
+        if result.emergency_level is not None and int(result.emergency_level) <= 2:
+            return _conversation_result(state, result, "urgent_escalation")
+        return _conversation_result(state, result, "refused")
+
+    level = int(preflight["level"])
+    state.triage_level = level
+
+    # Never delay L1/L2 escalation or an existing L3 same-day recommendation.
+    if level <= 3:
+        result = _process_query(request, preflight)
+        status = "urgent_escalation" if result.emergency_level is not None and int(result.emergency_level) <= 2 else "completed"
+        return _conversation_result(state, result, status)
+
+    # Compare only explicit facts across turns. Default False remains UNKNOWN.
+    if find_feature_conflicts(state.clinical_segments(), state.child_age_months):
+        return _incomplete_response(state, "conflict_message")
+
+    question_candidate = select_next_question(
+        preflight["symptoms_en"],
+        state.child_age_months,
+        state.asked_question_ids,
+    )
+    if question_candidate is not None:
+        max_turns = max(1, int(settings.conversation_max_clarification_turns))
+        if len(state.asked_question_ids) >= max_turns:
+            return _incomplete_response(state)
+
+        question_id = str(question_candidate["id"])
+        question = localized_question(question_id, state.language)
+        if question is None:
+            return _incomplete_response(state)
+        state.asked_question_ids.append(question_id)
+        state.current_question_id = question_id
+        state.status = "needs_clarification"
+        state.triage_level = None
+        return ConversationResponse(
+            conversation_id=state.conversation_id,
+            language=state.language,
+            status="needs_clarification",
+            answer=None,
+            follow_up_question=FollowUpQuestion(**question),
+            emergency_level=None,
+            emergency_label=_localized_conversation_text("pending_label", state.language),
+            citations=[],
+            see_doctor_urgency=_localized_conversation_text("pending_urgency", state.language),
+            verified=False,
+            refusal=False,
+            refusal_type=None,
+        )
+
+    if state.uncertain_answers:
+        return _incomplete_response(state)
+
+    result = _process_query(request, preflight)
+    if result.refusal:
+        if result.emergency_level is not None and int(result.emergency_level) <= 2:
+            return _conversation_result(state, result, "urgent_escalation")
+        return _conversation_result(state, result, "refused")
+    if result.emergency_level is None:
+        return _incomplete_response(state)
+    if int(result.emergency_level) <= 2:
+        return _conversation_result(state, result, "urgent_escalation")
+    return _conversation_result(state, result, "completed")
+
+
+@app.post("/conversations", response_model=ConversationResponse)
+def create_conversation(req: ConversationCreateRequest) -> ConversationResponse:
+    """Create an isolated case and return either one clarification or a result."""
+    full_initial = req.symptoms
+    if req.additional_context:
+        full_initial = f"{req.symptoms}\n{req.additional_context}"
+    language = detect_language(full_initial, req.language)
+    try:
+        state = conversation_store.create(
+            child_age_months=req.child_age_months,
+            language=language,
+            original_concern=req.symptoms,
+            additional_context=req.additional_context or "",
+        )
+    except RuntimeError as exc:
+        raise HTTPException(status_code=503, detail="Conversation capacity reached. Please retry.") from exc
+    return _advance_conversation(state)
+
+
+@app.post("/conversations/{conversation_id}/turn", response_model=ConversationResponse)
+def submit_conversation_turn(
+    conversation_id: str,
+    req: ConversationTurnRequest,
+) -> ConversationResponse:
+    with conversation_store.access(conversation_id) as state:
+        if state is None:
+            raise HTTPException(status_code=404, detail="Conversation not found or expired. Start a new conversation.")
+        if state.status != "needs_clarification" or not state.current_question_id:
+            raise HTTPException(status_code=409, detail="This conversation is no longer awaiting clarification.")
+        if req.question_id != state.current_question_id:
+            raise HTTPException(status_code=409, detail="The answer does not match the active follow-up question.")
+
+        answer = req.answer.strip()
+        option_label = resolve_option_label(req.question_id, answer, state.language)
+        answer_text = option_label or answer
+        uncertain = is_uncertain_answer(req.question_id, answer if option_label else None, answer_text)
+        state.turns.append({
+            "question_id": req.question_id,
+            "answer": answer_text,
+            "uncertain": uncertain,
+        })
+        if uncertain:
+            state.uncertain_answers.append(req.question_id)
+        state.current_question_id = None
+        return _advance_conversation(state)
+
+
+@app.delete("/conversations/{conversation_id}")
+def delete_conversation(conversation_id: str) -> dict[str, bool]:
+    if not conversation_store.delete(conversation_id):
+        raise HTTPException(status_code=404, detail="Conversation not found or expired.")
+    return {"deleted": True}
+
+
 _FRONTEND_DIR = Path(__file__).resolve().parent.parent / "frontend"
 
 if _FRONTEND_DIR.is_dir():
